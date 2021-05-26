@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: customerCenter
+  labels:
+    app: customerCenter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: customerCenter
+  template:
+    metadata:
+      labels:
+        app: customerCenter
+    spec:
+      containers:
+        - name: customerCenter
+          image: username/customerCenter:latest
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 10
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 10
+          livenessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 120
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 5
