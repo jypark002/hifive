@@ -158,7 +158,7 @@
 
 ### 완성된 1차 모형
 
-![image](https://user-images.githubusercontent.com/487999/79683646-63bfa300-8266-11ea-9bc5-c0b650507ac8.png)
+![eventstormin-1차](https://user-images.githubusercontent.com/80938080/119678799-caa48800-be7a-11eb-818a-c4f03d19d574.png)
 
     - View Model 추가
 
