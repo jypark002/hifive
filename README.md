@@ -181,62 +181,103 @@ mvn spring-boot:run
 
 - 각 서비스내에 도출된 핵심 Aggregate Root 객체를 Entity 로 선언하였다: (예시는 pay 마이크로 서비스). 이때 가능한 현업에서 사용하는 언어 (유비쿼터스 랭귀지)를 그대로 사용하려고 노력했다. 하지만, 일부 구현에 있어서 영문이 아닌 경우는 실행이 불가능한 경우가 있기 때문에 계속 사용할 방법은 아닌것 같다. (Maven pom.xml, Kafka의 topic id, FeignClient 의 서비스 id 등은 한글로 식별자를 사용하는 경우 오류가 발생하는 것을 확인하였다)
 
-```
-package fooddelivery;
+``` java
+package hifive;
 
 import javax.persistence.*;
 import org.springframework.beans.BeanUtils;
 import java.util.List;
+import java.util.Date;
 
 @Entity
-@Table(name="결제이력_table")
-public class 결제이력 {
+@Table(name="Conference_table")
+public class Conference {
 
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
-    private Long id;
-    private String orderId;
-    private Double 금액;
+    private Long conferenceId;
+    private String status;
+    private Long payId;
+    private Long roomNumber;
 
-    public Long getId() {
-        return id;
+    @PostPersist
+    public void onPostPersist() {
+        setStatus("CREATED");   // 회의 상태 : CREATED | PAID | ASSIGNED | CANCELED
+
+        Applied applied = new Applied();
+        applied.setConferenceId(this.getConferenceId());
+        applied.setConferenceStatus(this.getStatus());
+        BeanUtils.copyProperties(this, applied);
+        applied.publishAfterCommit();
+
+        // 결재 확인 Req/Res
+        hifive.external.Pay pay = new hifive.external.Pay();
+        pay.setConferenceId(this.getConferenceId());
+        pay.setStatus("PAID");
+
+        // mappings goes here
+        ConferenceApplication.applicationContext.getBean(hifive.external.PayService.class)
+                .pay(pay);
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    @PreRemove
+    public void onPreRemove() {
+        ApplyCanceled applyCanceled = new ApplyCanceled();
+        applyCanceled.setConferenceId(this.getConferenceId());
+        applyCanceled.setConferenceStatus(this.getStatus());
+        applyCanceled.setPayId(this.getPayId());
+        BeanUtils.copyProperties(this, applyCanceled);
+        applyCanceled.publishAfterCommit();
     }
-    public String getOrderId() {
-        return orderId;
+    
+    public Long getConferenceId() {
+        return conferenceId;
+    }
+    public void setConferenceId(Long conferenceId) {
+        this.conferenceId = conferenceId;
     }
 
-    public void setOrderId(String orderId) {
-        this.orderId = orderId;
+    public String getStatus() {
+        return status;
     }
-    public Double get금액() {
-        return 금액;
-    }
-
-    public void set금액(Double 금액) {
-        this.금액 = 금액;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
+    public Long getPayId() {
+        return payId;
+    }
+    public void setPayId(Long payId) {
+        this.payId = payId;
+    }
+
+    public Long getRoomNumber() {
+        return roomNumber;
+    }
+    public void setRoomNumber(Long roomNumber) {
+        this.roomNumber = roomNumber;
+    }
 }
 ```
 
 - Entity Pattern 과 Repository Pattern 을 적용하여 JPA 를 통하여 다양한 데이터소스 유형 (RDB or NoSQL) 에 대한 별도의 처리가 없도록 데이터 접근 어댑터를 자동 생성하기 위하여 Spring Data REST 의 RestRepository 를 적용하였다.
 
-```
-package fooddelivery;
+``` java
+package hifive;
 
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
-public interface 결제이력Repository extends PagingAndSortingRepository<결제이력, Long>{
+@RepositoryRestResource(collectionResourceRel="conferences", path="conferences")
+public interface ConferenceRepository extends PagingAndSortingRepository<Conference, Long>{
+
 }
 ```
 - 적용 후 REST API 의 테스트
 ```
-# app 서비스의 주문처리
-http localhost:8081/orders item="통닭"
+
+# conference 서비스의 회의실 신청
+http localhost:8081/conference item="통닭"
 
 # store 서비스의 배달처리
 http localhost:8083/주문처리s orderId=1
