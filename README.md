@@ -277,13 +277,13 @@ public interface ConferenceRepository extends PagingAndSortingRepository<Confere
 ```
 
 # conference 서비스의 회의실 신청
-http localhost:8081/conference item="통닭"
+http POST http://localhost:8081/conferences conferenceId=1 status="CREATED" roomNumber=1
 
-# store 서비스의 배달처리
-http localhost:8083/주문처리s orderId=1
+# conference 서비스의 회의실 신청 취소
+http POST http://localhost:8081/conferences conferenceId=1 status="CANCELED" roomNumber=1
 
 # 주문 상태 확인
-http localhost:8081/orders/1
+http GET http://localhost:8084/roomStates
 
 ```
 
