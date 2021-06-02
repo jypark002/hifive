@@ -17,13 +17,7 @@ public class PolicyHandler{
 
         if(!paid.validate()) return;
 
-        System.out.println("\n\n##### listener RoomAssign : " + paid.toJson() + "\n\n");
-
         // Sample Logic //
-        Room room = new Room();
-        room.setPayId(paid.getPayId());
-        room.setRoomStatus("RoomAssigned");
-        roomRepository.save(room);
             
     }
     
