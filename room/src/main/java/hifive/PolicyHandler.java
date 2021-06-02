@@ -21,31 +21,22 @@ public class PolicyHandler{
 
         // Sample Logic //
         Room room = new Room();
+        room.setPayId(paid.getPayId());
+        room.setRoomStatus("RoomAssigned");
         roomRepository.save(room);
             
     }
-    @StreamListener(KafkaProcessor.INPUT)
-    public void wheneverPaid_RoomAssign(@Payload Paid paid){
-
-        if(!paid.validate()) return;
-
-        System.out.println("\n\n##### listener RoomAssign : " + paid.toJson() + "\n\n");
-
-        // Sample Logic //
-        Room room = new Room();
-        roomRepository.save(room);
-            
-    }
+    
     @StreamListener(KafkaProcessor.INPUT)
     public void wheneverPayCanceled_CancelRoomAssign(@Payload PayCanceled payCanceled){
 
         if(!payCanceled.validate()) return;
 
-        System.out.println("\n\n##### listener CancelRoomAssign : " + payCanceled.toJson() + "\n\n");
-
         // Sample Logic //
-        Room room = new Room();
-        roomRepository.save(room);
+        Room room = RoomRepository.findByPayId(payCancelled.getPayId());
+        
+        //변경
+        
             
     }
 
