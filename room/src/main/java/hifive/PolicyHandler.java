@@ -25,7 +25,7 @@ public class PolicyHandler{
             System.out.println("\n\n##### listener RoomAssign : " + paid.toJson() + "\n\n");
             Room room = roomRepository.findByRoomNumber(paid.getRoomNumber());
 
-            room.setRoomStatus("ASSIGNED");
+            room.setRoomStatus("FULL");
             room.setUsedCount(room.getUsedCount() + 1);
             room.setConferenceId(paid.getConferenceId());
             room.setPayId(paid.getPayId());
@@ -48,7 +48,7 @@ public class PolicyHandler{
         Room room = roomRepository.findByPayId(payCanceled.getPayId());
         
         //변경
-        room.setRoomStatus("CANCELED");
+        room.setRoomStatus("EMPTY");
         room.setUsedCount(room.getUsedCount() - 1);
         room.setConferenceId((long)0);
         room.setPayId((long)0);

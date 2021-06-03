@@ -24,21 +24,21 @@ public class Room {
 
         try{
             System.out.println("\n\n##### RoomAssign PostPersist: " + this.getRoomStatus());
-            if(this.getRoomStatus() == "ASSIGNED"){
-                setRoomStatus("FULL");
+            if(this.getRoomStatus() == "FULL"){
+                
                 Assigned assignedRoom = new Assigned();
                 assignedRoom.setRoomNumber(this.getRoomNumber());
-                assignedRoom.setRoomStatus(this.getRoomStatus());
+                assignedRoom.setRoomStatus("ASSIGNED");
                 assignedRoom.setConferenceId(this.getRoomNumber());
                 assignedRoom.publishAfterCommit();
             }
             
-            else if(this.getRoomStatus() == "CANCELED"){
-                setRoomStatus("EMPTY");
+            else if(this.getRoomStatus() == "EMPTY"){
+        
                 CancelAssigned cancelAssigned = new CancelAssigned();
                 cancelAssigned.setId(this.getId());
                 cancelAssigned.setRoomNumber(this.getRoomNumber());
-                cancelAssigned.setRoomStatus(this.getRoomStatus());
+                cancelAssigned.setRoomStatus("CANCELED");
                 cancelAssigned.setConferenceId(this.getRoomNumber());
                 cancelAssigned.publishAfterCommit();
             }
