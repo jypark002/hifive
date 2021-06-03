@@ -4,6 +4,7 @@ import javax.persistence.*;
 import org.springframework.beans.BeanUtils;
 import java.util.List;
 import java.util.Date;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Entity
 @Table(name="Room_table")
@@ -11,6 +12,7 @@ public class Room {
 
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
+    private Long id;
     private Long roomNumber;
     private String roomStatus;
     private Integer usedCount;
@@ -19,18 +21,41 @@ public class Room {
 
     @PostPersist
     public void onPostPersist(){
-        Assigned assigned = new Assigned();
-        BeanUtils.copyProperties(this, assigned);
-        assigned.publishAfterCommit();
 
-
-        CancelAssigned cancelAssigned = new CancelAssigned();
-        BeanUtils.copyProperties(this, cancelAssigned);
-        cancelAssigned.publishAfterCommit();
-
+        try{
+            System.out.println("\n\n##### RoomAssign PostPersist: " + this.getRoomStatus());
+            if(this.getRoomStatus() == "ASSIGNED"){
+                setRoomStatus("FULL");
+                Assigned assignedRoom = new Assigned();
+                assignedRoom.setRoomNumber(this.getRoomNumber());
+                assignedRoom.setRoomStatus(this.getRoomStatus());
+                assignedRoom.setConferenceId(this.getRoomNumber());
+                assignedRoom.publishAfterCommit();
+            }
+            
+            else if(this.getRoomStatus() == "CANCELED"){
+                setRoomStatus("EMPTY");
+                CancelAssigned cancelAssigned = new CancelAssigned();
+                cancelAssigned.setId(this.getId());
+                cancelAssigned.setRoomNumber(this.getRoomNumber());
+                cancelAssigned.setRoomStatus(this.getRoomStatus());
+                cancelAssigned.setConferenceId(this.getRoomNumber());
+                cancelAssigned.publishAfterCommit();
+            }
+        }
+        catch(Exception ex){
+            System.out.println(ex);
+        }
 
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public Long getRoomNumber() {
         return roomNumber;

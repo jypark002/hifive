@@ -1,5 +1,6 @@
 package hifive;
 
+import java.util.Optional;
 import hifive.config.kafka.KafkaProcessor;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,9 +16,26 @@ public class PolicyHandler{
     @StreamListener(KafkaProcessor.INPUT)
     public void wheneverPaid_RoomAssign(@Payload Paid paid){
 
-        if(!paid.validate()) return;
+        if(!paid.validate()) {
+            System.out.println("##### listener RoomAssign Fail");
+            return;
+        }
 
-        // Sample Logic //
+        else{
+            System.out.println("\n\n##### listener RoomAssign : " + paid.toJson() + "\n\n");
+            Room room = roomRepository.findByRoomNumber(paid.getRoomNumber());
+
+            room.setRoomStatus("ASSIGNED");
+            room.setUsedCount(room.getUsedCount() + 1);
+            room.setConferenceId(paid.getConferenceId());
+            room.setPayId(paid.getPayId());
+
+            System.out.println("방배정 확인");
+            System.out.println("[ RoomStatus : "+ room.getRoomStatus()+", RoomNumber : " + room.getRoomNumber() + ", UsedCount : "+ room.getUsedCount()+ ", ConferenceId : "+ room.getConferenceId()+"]");
+            roomRepository.save(room);
+        }
+        
+        
             
     }
     
@@ -27,16 +45,18 @@ public class PolicyHandler{
         if(!payCanceled.validate()) return;
 
         // Sample Logic //
-        Room room = RoomRepository.findByPayId(payCancelled.getPayId());
+        Room room = roomRepository.findByPayId(payCanceled.getPayId());
         
         //변경
-        
-            
+        room.setRoomStatus("CANCELED");
+        room.setUsedCount(room.getUsedCount() - 1);
+        room.setConferenceId((long)0);
+        room.setPayId((long)0);
+        roomRepository.save(room);
+
     }
 
 
-    @StreamListener(KafkaProcessor.INPUT)
-    public void whatever(@Payload String eventString){}
 
 
 }
