@@ -24,7 +24,7 @@ public class PolicyHandler{
     public void wheneverApplyCanceled_CancelPay(@Payload ApplyCanceled applyCanceled){
 
         if(!applyCanceled.validate()) return;
-
+        
         System.out.println("\n\n##### listener CancelPay : " + applyCanceled.toJson() + "\n\n");
         Long con_id = applyCanceled.getConferenceId();
         Long pay_Id = applyCanceled.getPayId();
@@ -37,12 +37,7 @@ public class PolicyHandler{
         payCanceled.publish();
         payRepository.deleteById(pay_Id);
         entityManager.flush();
-
+        
     }
-
-
-    @StreamListener(KafkaProcessor.INPUT)
-    public void whatever(@Payload String eventString){}
-
 
 }

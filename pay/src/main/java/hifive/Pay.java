@@ -14,6 +14,7 @@ public class Pay {
     private Long payId;
     private String status;
     private Long conferenceId;
+    private Long roomNumber;
 
     @PostPersist
     public void onPostPersist(){
@@ -46,6 +47,12 @@ public class Pay {
     }
 
 
+   public Long getRoomNumber() {
+        return roomNumber;
+    }
 
+    public void setRoomNumber(Long roomNumber) {
+        this.roomNumber = roomNumber;
+    }
 
 }

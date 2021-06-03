@@ -1,0 +1,74 @@
+server:
+  port: 8088
+
+---
+
+spring:
+  profiles: default
+  cloud:
+    gateway:
+      routes:
+        - id: conference
+          uri: http://localhost:8081
+          predicates:
+            - Path=/conferences/** 
+        - id: pay
+          uri: http://localhost:8082
+          predicates:
+            - Path=/pays/** 
+        - id: room
+          uri: http://localhost:8083
+          predicates:
+            - Path=/rooms/** 
+        - id: customerCenter
+          uri: http://localhost:8084
+          predicates:
+            - Path= /roomStates/**
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "*"
+            allowedMethods:
+              - "*"
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
+
+
+---
+
+spring:
+  profiles: docker
+  cloud:
+    gateway:
+      routes:
+        - id: conference
+          uri: http://conference:8080
+          predicates:
+            - Path=/conferences/** 
+        - id: pay
+          uri: http://pay:8080
+          predicates:
+            - Path=/pays/** 
+        - id: room
+          uri: http://room:8080
+          predicates:
+            - Path=/rooms/** 
+        - id: customerCenter
+          uri: http://customerCenter:8080
+          predicates:
+            - Path= /roomStates/**
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "*"
+            allowedMethods:
+              - "*"
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
+
+server:
+  port: 8080

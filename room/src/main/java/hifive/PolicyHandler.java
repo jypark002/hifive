@@ -27,7 +27,7 @@ public class PolicyHandler{
         if(!payCanceled.validate()) return;
 
         // Sample Logic //
-        Room room = RoomRepository.findByPayId(payCancelled.getPayId());
+        Room room = roomRepository.findByPayId(payCanceled.getPayId());
         
         //변경
         
@@ -35,8 +35,8 @@ public class PolicyHandler{
     }
 
 
-    @StreamListener(KafkaProcessor.INPUT)
-    public void whatever(@Payload String eventString){}
+    // @StreamListener(KafkaProcessor.INPUT)
+    // public void whatever(@Payload String eventString){}
 
 
 }
