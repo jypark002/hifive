@@ -46,9 +46,16 @@ public class PolicyHandler{
             return;
         }
 
+<<<<<<< HEAD
         else{
             //취소 시 조회 - findByPayId
             Room room = roomRepository.findByPayId(payCanceled.getPayId());
+=======
+        // Sample Logic //
+        Room room = roomRepository.findByPayId(payCanceled.getPayId());
+        
+        //변경
+>>>>>>> develop-conference
         
             //취소 시 방에 등록된 conferenceId, PayId 0으로 초기화 
             room.setRoomStatus("EMPTY");
@@ -60,4 +67,12 @@ public class PolicyHandler{
  
     }
 
+<<<<<<< HEAD
+=======
+
+    // @StreamListener(KafkaProcessor.INPUT)
+    // public void whatever(@Payload String eventString){}
+
+
+>>>>>>> develop-conference
 }
