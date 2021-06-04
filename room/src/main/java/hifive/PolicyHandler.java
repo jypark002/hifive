@@ -32,7 +32,7 @@ public class PolicyHandler{
             room.setPayId(paid.getPayId());
 
             System.out.println("##### 방배정 확인");
-            System.out.println("[ RoomStatus : "+ room.getRoomStatus()+", RoomNumber : " + room.getRoomNumber() + ", UsedCount : "+ room.getUsedCount()+ ", ConferenceId : "+ room.getConferenceId()+"]");
+            System.out.println("[ RoomStatus : "+ room.getRoomStatus()+", RoomNumber : " + room.getRoomNumber() + ", UsedCount : "+ room.getUsedCount()+ ", ConferenceId : "+ room.getConferenceId()+ ","+room.getPayId()+"]");
             roomRepository.save(room);
         }
             

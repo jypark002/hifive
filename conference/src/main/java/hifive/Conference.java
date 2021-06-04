@@ -54,6 +54,19 @@ public class Conference {
         // Conference conference = confOptional.get();
         this.setPayId(Long.valueOf(res.get("payid")));
         // conferenceRepository.save(conference);
+
+        System.out.println("저장된 후 confernece");
+        System.out.println(this.getConferenceId());
+        System.out.println(this.getPayId());
+        System.out.println(this.getStatus());
+        ConferenceApplication.applicationContext.getBean(hifive.ConferenceRepository.class).save(this);
+
+        Optional<Conference> confOptional = ConferenceApplication.applicationContext.getBean(hifive.ConferenceRepository.class).findById(this.getConferenceId());
+        Conference conference = confOptional.get();
+        System.out.println("가져온 후 confernece");
+        System.out.println(conference.getConferenceId());
+        System.out.println(conference.getPayId());
+        System.out.println(conference.getStatus());
         
         //컨슈머는 kafka-console-consumer.bat --bootstrap-server http://localhost:9092 --topic hifive --from-beginning 여기서 확인 가능
         //roomnumber 없어서 추가, Room Policy Handler 메소드 2개 겹침 제거. Pay Policy Handler도 불필요한 메소드 1개 추가된거 제거
@@ -66,12 +79,16 @@ public class Conference {
     public void onPreRemove(){
         ApplyCanceled applyCanceled = new ApplyCanceled();
         applyCanceled.setConferenceId(this.getConferenceId());
-        applyCanceled.setConferenceStatus(this.getStatus());
+        applyCanceled.setConferenceStatus("CANCELED");
         applyCanceled.setPayId(this.getPayId());
         applyCanceled.publishAfterCommit();
         //삭제하고 ApplyCanceled 이벤트 카프카에 전송
     }
 
+    @PostUpdate
+    public void onPostUpdate(){
+
+    }
 
     public Long getConferenceId() {
         return conferenceId;

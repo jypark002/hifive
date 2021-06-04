@@ -28,7 +28,15 @@ public class PolicyHandler{
             Optional<Conference> confOptional = conferenceRepository.findById(assigned.getConferenceId());
             //assigned의 conferenceId로 찾고
             Conference conference = confOptional.get();
-            conference.setStatus("ASSIGNED");
+            System.out.println("--------------------------------------");
+            System.out.println("Assigend된 conference 데이터");
+            System.out.println(conference.getConferenceId());
+            System.out.println(conference.getPayId());
+            System.out.println(conference.getRoomNumber());
+            System.out.println(conference.getStatus());
+            System.out.println("--------------------------------------");
+            conference.setPayId(assigned.getPayId())
+            conference.setStatus(assigned.getRoomStatus());
             conferenceRepository.save(conference);
         } 
             

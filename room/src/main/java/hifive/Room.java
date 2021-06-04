@@ -31,6 +31,7 @@ public class Room {
             assignedRoom.setRoomNumber(this.getRoomNumber());
             assignedRoom.setRoomStatus("ASSIGNED");
             assignedRoom.setConferenceId(this.getConferenceId());
+            assignedRoom.setPayId(this.getPayId());
             assignedRoom.publishAfterCommit();
         }
     

@@ -19,7 +19,11 @@ public class Pay {
     @PostPersist
     public void onPostPersist(){
         Paid paid = new Paid();
-        BeanUtils.copyProperties(this, paid);
+        paid.setPayId(this.payId);
+        paid.setPayStatus(this.status);
+        paid.setConferenceId(this.conferenceId);
+        paid.setRoomNumber(this.roomNumber);
+        //BeanUtils.copyProperties(this, paid);
         paid.publishAfterCommit();
     }
 
