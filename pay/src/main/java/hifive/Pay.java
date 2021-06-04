@@ -12,8 +12,9 @@ public class Pay {
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
     private Long payId;
-    private String status;
+    private String payStatus;
     private Long conferenceId;
+    private Long roomNumber;
 
     @PostPersist
     public void onPostPersist(){
@@ -30,12 +31,12 @@ public class Pay {
     public void setPayId(Long payId) {
         this.payId = payId;
     }
-    public String getStatus() {
-        return status;
+    public String getPayStatus() {
+        return payStatus;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setPayStatus(String payStatus) {
+        this.payStatus = payStatus;
     }
     public Long getConferenceId() {
         return conferenceId;
@@ -46,6 +47,12 @@ public class Pay {
     }
 
 
+   public Long getRoomNumber() {
+        return roomNumber;
+    }
 
+    public void setRoomNumber(Long roomNumber) {
+        this.roomNumber = roomNumber;
+    }
 
 }

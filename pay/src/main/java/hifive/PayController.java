@@ -20,7 +20,8 @@ import java.util.List;
     String con_status = applied.getConferenceStatus();
     Pay pay = new Pay();
     pay.setConferenceId(con_id);
-    pay.setStatus(con_status);
+    pay.setPayStatus(con_status);
+    pay.setRoomNumber(room_no);
     payRepository.save(pay);
     return "Pay_complete";
   }

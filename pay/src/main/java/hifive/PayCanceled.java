@@ -1,4 +1,3 @@
-
 package hifive;
 
 public class PayCanceled extends AbstractEvent {
@@ -29,4 +28,3 @@ public class PayCanceled extends AbstractEvent {
         this.conferenceId = conferenceId;
     }
 }
-
