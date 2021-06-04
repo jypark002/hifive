@@ -1,10 +1,10 @@
 package hifive;
 
+import java.util.*;
 import javax.persistence.*;
 import org.springframework.beans.BeanUtils;
 import java.util.List;
 import java.util.Date;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @Entity
 @Table(name="Room_table")
@@ -19,32 +19,30 @@ public class Room {
     private Long conferenceId;
     private Long payId;
 
-    @PostPersist
-    public void onPostPersist(){
+    @PostUpdate
+    public void onPostUpdate(){
+      
+        System.out.println("\n\n##### RoomAssign PostPersist: " + this.getRoomStatus());
 
-        try{
-            System.out.println("\n\n##### RoomAssign PostPersist: " + this.getRoomStatus());
-            if(this.getRoomStatus() == "FULL"){
+        //예약 회의실 상태(roomStatus) == FULL
+        if(this.getRoomStatus().equals("FULL")){
                 
-                Assigned assignedRoom = new Assigned();
-                assignedRoom.setRoomNumber(this.getRoomNumber());
-                assignedRoom.setRoomStatus("ASSIGNED");
-                assignedRoom.setConferenceId(this.getRoomNumber());
-                assignedRoom.publishAfterCommit();
-            }
-            
-            else if(this.getRoomStatus() == "EMPTY"){
-        
-                CancelAssigned cancelAssigned = new CancelAssigned();
-                cancelAssigned.setId(this.getId());
-                cancelAssigned.setRoomNumber(this.getRoomNumber());
-                cancelAssigned.setRoomStatus("CANCELED");
-                cancelAssigned.setConferenceId(this.getRoomNumber());
-                cancelAssigned.publishAfterCommit();
-            }
+            Assigned assignedRoom = new Assigned();
+            assignedRoom.setRoomNumber(this.getRoomNumber());
+            assignedRoom.setRoomStatus("ASSIGNED");
+            assignedRoom.setConferenceId(this.getConferenceId());
+            assignedRoom.publishAfterCommit();
         }
-        catch(Exception ex){
-            System.out.println(ex);
+    
+        //취소 회의실 상태(roomStatus) == EMPTY
+        else if(this.getRoomStatus().equals("EMPTY")){
+        
+            CancelAssigned cancelAssigned = new CancelAssigned();
+            cancelAssigned.setId(this.getId());
+            cancelAssigned.setRoomNumber(this.getRoomNumber());
+            cancelAssigned.setRoomStatus("CANCELED");
+            cancelAssigned.setConferenceId(this.getConferenceId());
+            cancelAssigned.publishAfterCommit();
         }
 
     }

@@ -1,3 +1,4 @@
+
 package hifive;
 
 public class Paid extends AbstractEvent {
@@ -37,3 +38,4 @@ public class Paid extends AbstractEvent {
         this.roomNumber = roomNumber;
     }
 }
+

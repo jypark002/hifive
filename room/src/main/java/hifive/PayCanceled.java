@@ -7,7 +7,6 @@ public class PayCanceled extends AbstractEvent {
     private String payStatus;
     private Long conferenceId;
 
-
     public Long getPayId() {
         return payId;
     }
@@ -29,7 +28,5 @@ public class PayCanceled extends AbstractEvent {
     public void setConferenceId(Long conferenceId) {
         this.conferenceId = conferenceId;
     }
-
-
 }
 
