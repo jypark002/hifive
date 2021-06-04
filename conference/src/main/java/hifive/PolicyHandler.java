@@ -35,7 +35,7 @@ public class PolicyHandler{
             System.out.println(conference.getRoomNumber());
             System.out.println(conference.getStatus());
             System.out.println("--------------------------------------");
-            conference.setPayId(assigned.getPayId())
+            conference.setPayId(assigned.getPayId());
             conference.setStatus(assigned.getRoomStatus());
             conferenceRepository.save(conference);
         } 

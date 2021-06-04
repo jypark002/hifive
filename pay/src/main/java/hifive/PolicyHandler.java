@@ -31,8 +31,8 @@ public class PolicyHandler{
         String con_status = applyCanceled.getConferenceStatus();
 
         PayCanceled payCanceled = new PayCanceled();
-        payCanceled.setPayId(con_id);
-        payCanceled.setConferenceId(pay_Id);
+        payCanceled.setPayId(pay_Id);
+        payCanceled.setConferenceId(con_id);
         payCanceled.setPayStatus(con_status);
         payCanceled.publish();
         payRepository.deleteById(pay_Id);
