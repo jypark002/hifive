@@ -1,3 +1,4 @@
+
 package hifive;
 
 public class Paid extends AbstractEvent {
@@ -5,7 +6,6 @@ public class Paid extends AbstractEvent {
     private Long payId;
     private String payStatus;
     private Long conferenceId;
-    private Long roomNumber;
 
     public Long getPayId() {
         return payId;
@@ -28,12 +28,5 @@ public class Paid extends AbstractEvent {
     public void setConferenceId(Long conferenceId) {
         this.conferenceId = conferenceId;
     }
-
-    public Long getRoomNumber() {
-        return roomNumber;
-    }
-
-    public void setRoomNumber(Long roomNumber) {
-        this.roomNumber = roomNumber;
-    }
 }
+
