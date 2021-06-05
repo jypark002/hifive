@@ -36,5 +36,9 @@ public class CancelAssigned extends AbstractEvent {
     public void setConferenceId(Long conferenceId) {
         this.conferenceId = conferenceId;
     }
+
+    public boolean isMe() {
+        return false;
+    }
 }
 

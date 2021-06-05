@@ -18,7 +18,7 @@ public class PolicyHandler{
 
         System.out.println("\n\n##### listener SendAlarm : " + cancelAssigned.toJson() + "\n\n");
 
-        // Sample Logic //
+        //카톡전송(" 회의실 신청 승인 완료 : " + cancelAssigned.toString(), cancelAssigned.getConferenceId());
             
     }
     @StreamListener(KafkaProcessor.INPUT)
@@ -28,7 +28,7 @@ public class PolicyHandler{
 
         System.out.println("\n\n##### listener SendAlarm : " + assigned.toJson() + "\n\n");
 
-        // Sample Logic //
+        //카톡전송(" 회의실 신청 취소 완료 : " + assigned.toString(), assigned.getConferenceId());
             
     }
 

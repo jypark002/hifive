@@ -7,5 +7,6 @@ import java.util.List;
 
 public interface RoomStateRepository extends CrudRepository<RoomState, Long> {
 
+    List<RoomState> findByConferenceId(Long conferenceId);
 
 }

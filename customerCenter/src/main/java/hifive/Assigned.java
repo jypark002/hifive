@@ -3,9 +3,11 @@ package hifive;
 
 public class Assigned extends AbstractEvent {
 
+
     private Long roomNumber;
     private String roomStatus;
     private Long conferenceId;
+    private Long payId;
 
     public Long getRoomNumber() {
         return roomNumber;
@@ -28,5 +30,17 @@ public class Assigned extends AbstractEvent {
     public void setConferenceId(Long conferenceId) {
         this.conferenceId = conferenceId;
     }
+    public Long getPayId() {
+        return payId;
+    }
+
+    public void setPayId(Long payId) {
+        this.payId = payId;
+    }
+
+    public boolean isMe() {
+        return false;
+    }
+
 }
 
