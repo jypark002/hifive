@@ -37,6 +37,9 @@ logging:
     org.springframework.cloud: debug
 server:
   port: 8081
+api:
+  url:
+    pay: http://localhost:8082
 ---
 
 spring:
@@ -62,3 +65,13 @@ spring:
         event-out:
           destination: hifive
           contentType: application/json
+fein:
+  hystrix:
+    enabled: true
+hystrix:
+  command:
+    default:
+      execution.isolation.tread.timeoutInMilliseconds: 610
+api:
+  url:
+    pay: ${configurl}
