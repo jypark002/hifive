@@ -23,8 +23,8 @@ public class RoomStateViewHandler {
     @StreamListener(KafkaProcessor.INPUT)
     public void whenApplied_then_CREATE (@Payload Applied applied) {
         try {
-
-            if (applied.isMe()) {
+            
+            if (applied.validate()) {
                 // view 객체 생성
                 RoomState roomState = new RoomState();
                 // view 객체에 이벤트의 Value 를 set 함
@@ -43,7 +43,7 @@ public class RoomStateViewHandler {
     @StreamListener(KafkaProcessor.INPUT)
     public void whenAssigned_then_UPDATE(@Payload Assigned assigned) {
         try {
-            if (assigned.isMe()) {
+            if (assigned.validate()) {
                 // view 객체 조회
                 List<RoomState> roomStateList = roomStateRepository.findByConferenceId(assigned.getConferenceId());
                 for(RoomState roomState : roomStateList){
@@ -63,7 +63,7 @@ public class RoomStateViewHandler {
     @StreamListener(KafkaProcessor.INPUT)
     public void whenCancelAssigned_then_UPDATE(@Payload CancelAssigned cancelAssigned) {
         try {
-            if (cancelAssigned.isMe()) {
+            if (cancelAssigned.validate()) {
                 // view 객체 조회
                 List<RoomState> roomStateList = roomStateRepository.findByConferenceId(cancelAssigned.getConferenceId());
                 for(RoomState roomState : roomStateList){
@@ -82,7 +82,7 @@ public class RoomStateViewHandler {
     }
     public void whenPaid_then_UPDATE(@Payload Paid paid) {
         try {
-            if (paid.isMe()) {
+            if (paid.validate()) {
                 // view 객체 조회
                 List<RoomState> roomStateList = roomStateRepository.findByConferenceId(paid.getConferenceId());
                 for(RoomState roomState : roomStateList){

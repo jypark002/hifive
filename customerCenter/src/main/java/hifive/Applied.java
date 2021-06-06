@@ -1,6 +1,6 @@
 package hifive;
 
-public class Applied {
+public class Applied extends AbstractEvent {
     private Long conferenceId;
     private String conferenceStatus;
     private Long roomNumber;
