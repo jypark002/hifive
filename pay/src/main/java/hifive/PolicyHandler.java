@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PostPersist;
+import java.util.Optional;
 
 @Service
 public class PolicyHandler{
@@ -26,17 +27,22 @@ public class PolicyHandler{
         if(!applyCanceled.validate()) return;
         
         System.out.println("\n\n##### listener CancelPay : " + applyCanceled.toJson() + "\n\n");
-        Long con_id = applyCanceled.getConferenceId();
-        Long pay_Id = applyCanceled.getPayId();
-        String con_status = applyCanceled.getConferenceStatus();
+//        Long con_id = applyCanceled.getConferenceId();
+//        Long pay_Id = applyCanceled.getPayId();
+//        String con_status = applyCanceled.getConferenceStatus();
 
-        PayCanceled payCanceled = new PayCanceled();
-        payCanceled.setPayId(pay_Id);
-        payCanceled.setConferenceId(con_id);
-        payCanceled.setPayStatus(con_status);
-        payCanceled.publish();
-        payRepository.deleteById(pay_Id);
-        entityManager.flush();
+//        PayCanceled payCanceled = new PayCanceled();
+//        payCanceled.setPayId(pay_Id);
+//        payCanceled.setConferenceId(con_id);
+//        payCanceled.setPayStatus(con_status);
+//        payCanceled.publish();
+        if (applyCanceled.getPayId() == 0) return;
+        Optional<Pay> optionalPay = payRepository.findById(applyCanceled.getPayId());
+        Pay pay = optionalPay.get();
+        pay.setStatus("CANCELED");
+        payRepository.delete(pay);
+//        payRepository.deleteById(applyCanceled.getPayId());
+//        entityManager.flush();
         
     }
 
