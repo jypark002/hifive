@@ -12,52 +12,53 @@ public class RoomState {
         private Long id;
         private Long roomNumber;
         private String roomStatus;
-        private Integer roomUsedCount;
         private Long conferenceId;
-        private String conferenceStatus;
+//        private String conferenceStatus;
+        private Long payId;
 
 
         public Long getId() {
             return id;
         }
-
         public void setId(Long id) {
             this.id = id;
         }
+
         public Long getRoomNumber() {
             return roomNumber;
         }
-
         public void setRoomNumber(Long roomNumber) {
             this.roomNumber = roomNumber;
         }
+
         public String getRoomStatus() {
             return roomStatus;
         }
-
         public void setRoomStatus(String roomStatus) {
             this.roomStatus = roomStatus;
         }
-        public Integer getRoomUsedCount() {
-            return roomUsedCount;
-        }
 
-        public void setRoomUsedCount(Integer roomUsedCount) {
-            this.roomUsedCount = roomUsedCount;
-        }
         public Long getConferenceId() {
             return conferenceId;
         }
-
         public void setConferenceId(Long conferenceId) {
             this.conferenceId = conferenceId;
         }
-        public String getConferenceStatus() {
-            return conferenceStatus;
+
+        public Long getPayId() {
+            return payId;
+        }
+        public void setPayId(Long payId) {
+            this.payId = payId;
         }
 
-        public void setConferenceStatus(String conferenceStatus) {
-            this.conferenceStatus = conferenceStatus;
-        }
+//        public String getConferenceStatus() {
+//            return conferenceStatus;
+//        }
+//        public void setConferenceStatus(String conferenceStatus) {
+//            this.conferenceStatus = conferenceStatus;
+//        }
+
+
 
 }

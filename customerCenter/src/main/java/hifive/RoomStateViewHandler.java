@@ -28,9 +28,9 @@ public class RoomStateViewHandler {
                 // view 객체 생성
                 RoomState roomState = new RoomState();
                 // view 객체에 이벤트의 Value 를 set 함
+                roomState.setRoomNumber(applied.getRoomNumber());
+                roomState.setRoomStatus(applied.getConferenceStatus());
                 roomState.setConferenceId(applied.getConferenceId());
-                roomState.setConferenceStatus(applied.getConferenceStatus());
-                roomState.setRoomNumber(applied.getRoomNumber());                            
 
                 // view 레파지 토리에 save
                 roomStateRepository.save(roomState);
@@ -45,13 +45,15 @@ public class RoomStateViewHandler {
         try {
             if (assigned.validate()) {
                 // view 객체 조회
-                List<RoomState> roomStateList = roomStateRepository.findByConferenceId(assigned.getConferenceId());
+                List<RoomState> roomStateList = roomStateRepository.findByRoomNumber(assigned.getRoomNumber());
                 for(RoomState roomState : roomStateList){
                     // view 객체에 이벤트의 eventDirectValue 를 set 함
                     // view 레파지 토리에 save
-                    roomState.setId(assigned.getPayId());
-                    roomState.setRoomNumber(assigned.getRoomNumber());
+//                    roomState.setId(assigned.getPayId());
+//                    roomState.setRoomNumber(assigned.getRoomNumber());
                     roomState.setRoomStatus(assigned.getRoomStatus());
+                    roomState.setConferenceId(assigned.getConferenceId());
+                    roomState.setPayId(assigned.getPayId());
 
                     roomStateRepository.save(roomState);
                 }
@@ -65,13 +67,14 @@ public class RoomStateViewHandler {
         try {
             if (cancelAssigned.validate()) {
                 // view 객체 조회
-                List<RoomState> roomStateList = roomStateRepository.findByConferenceId(cancelAssigned.getConferenceId());
+                List<RoomState> roomStateList = roomStateRepository.findByRoomNumber(cancelAssigned.getRoomNumber());
                 for(RoomState roomState : roomStateList){
                     // view 객체에 이벤트의 eventDirectValue 를 set 함
                     // view 레파지 토리에 save 
-                    roomState.setId(cancelAssigned.getId());
-                    roomState.setRoomNumber(cancelAssigned.getRoomNumber());
+//                    roomState.setId(cancelAssigned.getId());
                     roomState.setRoomStatus(cancelAssigned.getRoomStatus());
+                    roomState.setConferenceId(cancelAssigned.getConferenceId());
+                    roomState.setPayId(0L);
                     
                     roomStateRepository.save(roomState);
                 }
@@ -84,12 +87,13 @@ public class RoomStateViewHandler {
         try {
             if (paid.validate()) {
                 // view 객체 조회
-                List<RoomState> roomStateList = roomStateRepository.findByConferenceId(paid.getConferenceId());
+                List<RoomState> roomStateList = roomStateRepository.findByRoomNumber(paid.getRoomNumber());
                 for(RoomState roomState : roomStateList){
                     // view 객체에 이벤트의 eventDirectValue 를 set 함
                     // view 레파지 토리에 save 
-                    roomState.setId(paid.getPayId());
-                    roomState.setConferenceStatus(paid.getPayStatus());
+//                    roomState.setId(paid.getPayId());
+                    roomState.setRoomStatus(paid.getPayStatus());
+                    roomState.setConferenceId(paid.getConferenceId());
 
                     roomStateRepository.save(roomState);
                 }
