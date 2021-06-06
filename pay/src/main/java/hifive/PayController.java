@@ -13,39 +13,39 @@ import java.util.HashMap;
  public class PayController {
 
   @Autowired PayRepository payRepository;
-
-  @PostMapping("/room_applied")
-  public String room_reg(Applied applied)
-  {
-    Long con_id = applied.getConferenceId();
-    Long room_no = applied.getRoomNumber();
-    String con_status = applied.getConferenceStatus();
-    Pay pay = new Pay();
-    pay.setConferenceId(con_id);
-    pay.setStatus(con_status);
-    payRepository.save(pay);
-    return "Pay_complete";
-  }
-
-  @GetMapping("/test")
-  public void test()
-  {
-      ApplyCanceled ac = new ApplyCanceled();
-      ac.setPayId(1l);
-      ac.setConferenceId(1l);
-      ac.setConferenceStatus("OK");
-      ac.publish();
-  }
-
+//
+//  @PostMapping("/room_applied")
+//  public String room_reg(Applied applied)
+//  {
+//    Long con_id = applied.getConferenceId();
+//    Long room_no = applied.getRoomNumber();
+//    String con_status = applied.getConferenceStatus();
+//    Pay pay = new Pay();
+//    pay.setConferenceId(con_id);
+//    pay.setStatus(con_status);
+//    payRepository.save(pay);
+//    return "Pay_complete";
+//  }
+//
+//  @GetMapping("/test")
+//  public void test()
+//  {
+//      ApplyCanceled ac = new ApplyCanceled();
+//      ac.setPayId(1l);
+//      ac.setConferenceId(1l);
+//      ac.setConferenceStatus("OK");
+//      ac.publish();
+//  }
+//
   @RequestMapping(value = "/pays/paid", method = RequestMethod.GET,  produces = "application/json;charset=UTF-8")
     public Map<String,String> paid(HttpServletRequest request, HttpServletResponse response) throws Exception {
         Map<String, String> res = new HashMap<String,String>();
         res.put("msg","");
-        res.put("status","");    
+        res.put("status","");
         //결제 입장에서는 회의팀에서 체크하고 상태값을 바꿔주는 정도 밖에 할게 없음 현재는
         //회의번호,회의실번호, 상태인데 회의실번호는 여기랑은 큰상관이 없음
         //하지만 추후 사용가능성을 염두에 두고 일단 다 받아들이겠음
-        
+
         String status = request.getParameter("status");
         Long conferenceId = Long.valueOf(request.getParameter("conferenceId"));
         Long roomNumber = Long.valueOf(request.getParameter("roomNumber"));
@@ -67,7 +67,7 @@ import java.util.HashMap;
             res.put("status","200");
             res.put("payid",(savedPay.getPayId()+""));
         }catch(Exception e){
-           
+
             e.printStackTrace();
         }
         return res;
