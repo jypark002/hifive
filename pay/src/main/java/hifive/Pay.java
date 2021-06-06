@@ -18,6 +18,11 @@ public class Pay {
 
     @PostPersist
     public void onPostPersist(){
+
+        if (this.getStatus() != "PAID") return;
+
+        System.out.println("********************* Pay PostPersist Start. PayStatus=" + this.getStatus());
+
         Paid paid = new Paid();
         paid.setPayId(this.payId);
         paid.setPayStatus(this.status);
@@ -25,8 +30,32 @@ public class Pay {
         paid.setRoomNumber(this.roomNumber);
         //BeanUtils.copyProperties(this, paid);
         paid.publishAfterCommit();
+
+        try {
+            Thread.currentThread().sleep((long) (400 + Math.random() * 220));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("********************* Pay PostPersist End.");
     }
 
+    @PreRemove
+    public void onPreRemove() {
+
+        if (this.getPayId() == null || this.getStatus() != "CANCELED") return;
+
+        System.out.println("********************* Pay PreRemove Start. PayStatus=" + this.getStatus());
+
+        PayCanceled payCanceled = new PayCanceled();
+        payCanceled.setPayId(this.getPayId());
+        payCanceled.setPayStatus(this.getStatus());
+        payCanceled.setConferenceId(this.getConferenceId());
+//        BeanUtils.copyProperties(this, payCanceled);
+        payCanceled.publishAfterCommit();
+
+        System.out.println("********************* Pay PayCanceled End.");
+    }
 
     public Long getPayId() {
         return payId;
