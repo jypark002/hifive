@@ -3,18 +3,18 @@ package hifive;
 
 public class CancelAssigned extends AbstractEvent {
 
-    private Long id;
+//    private Long id;
     private Long roomNumber;
     private String roomStatus;
     private Long conferenceId;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
+//    public Long getId() {
+//        return id;
+//    }
+//
+//    public void setId(Long id) {
+//        this.id = id;
+//    }
     public Long getRoomNumber() {
         return roomNumber;
     }
