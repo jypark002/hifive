@@ -144,7 +144,7 @@
         . 신청 상태가 생성/취소되면 알림을 줄 수 있어야 한다. `Event driven`
 
 ### 완성된 모델
-![eventstormin-수정](https://user-images.githubusercontent.com/80938080/119837166-4b2bbd00-bf3d-11eb-94bb-85bcae7d3491.png)
+![image](https://user-images.githubusercontent.com/81279673/120965022-3520c680-c79f-11eb-9f13-dc80b8872f3f.png)
 
     - 수정된 모델은 모든 요구사항을 커버함.
 
