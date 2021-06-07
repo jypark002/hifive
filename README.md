@@ -15,7 +15,6 @@
   - [구현:](#구현-)
     - [DDD 의 적용](#DDD-의-적용)
     - [폴리글랏 퍼시스턴스](#폴리글랏-퍼시스턴스)
-    - [폴리글랏 프로그래밍](#폴리글랏-프로그래밍)
     - [동기식 호출 과 Fallback 처리](#동기식-호출-과-Fallback-처리)
     - [비동기식 호출 과 Eventual Consistency](#비동기식-호출-과-Eventual-Consistency)
   - [운영](#운영)
@@ -83,7 +82,7 @@
 ### 부적격 이벤트 탈락
 ![image](https://user-images.githubusercontent.com/81279673/120964787-cfccd580-c79e-11eb-9746-08b844f44181.png)
 
-    - 과정 중 도출된 잘못된 도메인 이벤트들을 걸러내는 작업을 수행함
+    - 이벤트스토밍 과정 중 도출된 잘못된 도메인 이벤트들을 걸러내는 작업을 수행함
     - 회의실 선택, 취소를 위한 신청건 선택, 결제버튼 선택, 결제버튼 선택은 UI이벤트이므로 대상에서 제외함
 
 ### 액터, 커맨드 부착하여 읽기 좋게
@@ -842,6 +841,29 @@ Concurrency:		       96.02
 ```
 
 배포기간 동안 Availability 가 변화없기 때문에 무정지 재배포가 성공한 것으로 확인됨.
+
+## Self-healing (Liveness Probe)
+- Pay 서비스에 kubectl apply -f deployment.yml 을 통해 liveness Probe 옵션 적용
+
+- liveness probe 옵션을 추가
+- initialDelaySeconds: 10
+- timeoutSeconds: 2
+- periodSeconds: 5
+- failureThreshold: 5
+                 
+
+  ![스크린샷 2021-06-07 오후 9 30 09](https://user-images.githubusercontent.com/40500484/121017733-92853980-c7d8-11eb-969a-284f88aece6f.png)
+
+
+
+- Pay 서비스에 liveness가 적용된 것을 확인
+
+- Http Get Pay/live를 통해서 컨테이너 상태 실시간 확인 및 재시동 
+
+  
+  ![스크린샷 2021-06-07 오후 9 45 31](https://user-images.githubusercontent.com/40500484/121018788-c9a81a80-c7d9-11eb-9013-1a68ccf1a9b1.png)
+
+
 
 
 # 신규 개발 조직의 추가
