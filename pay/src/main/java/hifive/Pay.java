@@ -37,6 +37,7 @@ public class Pay {
             e.printStackTrace();
         }
 
+        System.out.println(toString());
         System.out.println("********************* Pay PostPersist End.");
     }
 
