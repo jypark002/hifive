@@ -126,19 +126,20 @@
 ![image](https://user-images.githubusercontent.com/81279673/120969797-9186e480-c7a5-11eb-8582-35a2517616e5.png)
 
     - 고객이 신청을 취소할 수 있다. (ok)
-    - 신청이 취소되면 회의실 할당을 취소한다. (ok)
+    - 신청이 취소되면 회의실 할당이 취소된다. (ok)
 
-### 비기능 요구사항에 대한 검증
-![eventstormin-수정](https://user-images.githubusercontent.com/80938080/119837166-4b2bbd00-bf3d-11eb-94bb-85bcae7d3491.png)
+### 비기능 요구사항 검증
+![image](https://user-images.githubusercontent.com/81279673/120970763-cfd0d380-c7a6-11eb-9a6b-4760792b3815.png)
 
     - 트랜잭션
-        . 결제가 되지 않으면 회의실은 신청되지 않는다. `Sync 호출` 
+        1. 결제가 되지 않으면 회의실은 신청되지 않는다. `Sync 호출` 
     - 장애격리
-        . 회의실 관리 기능이 수행되지 않더라도 신청은 365일 24시간 가능해야 한다. `Async (event-driven)`, `Eventual Consistency`
-        . 결제시스템이 과중되면 신청을 잠시동안 받지 않고 잠시후에 신청하도록 유도한다. `Circuit breaker`, `fallback`
+        2. 회의실 관리 기능이 수행되지 않더라도 신청은 365일 24시간 가능해야 한다. `Async (event-driven)`, `Eventual Consistency`
+        3. 결제시스템이 과중되면 신청을 잠시동안 받지 않고 잠시후에 신청하도록 유도한다. `Circuit breaker`, `fallback`
     - 성능
-        . 고객은 회의실 현황을 언제든지 확인할 수 있어야 한다. `CQRS`
-        . 신청 상태가 생성/취소되면 알림을 줄 수 있어야 한다. `Event driven`
+        4. 고객은 회의실 현황을 언제든지 확인할 수 있어야 한다. `CQRS`
+        5. 신청 상태가 생성/취소되면 알림을 줄 수 있어야 한다. `Event driven`
+
 
 ### 완성된 모델
 ![image](https://user-images.githubusercontent.com/81279673/120965022-3520c680-c79f-11eb-9f13-dc80b8872f3f.png)
