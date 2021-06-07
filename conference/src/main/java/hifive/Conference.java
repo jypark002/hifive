@@ -31,7 +31,7 @@ public class Conference{
         applied.setRoomNumber(this.getRoomNumber());
         applied.publishAfterCommit();
         //신청내역이 카프카에 올라감
-        try {
+//        try {
             Map<String, String> res = ConferenceApplication.applicationContext
                     .getBean(hifive.external.PayService.class)
                     .paid(applied);
@@ -45,11 +45,11 @@ public class Conference{
             // conferenceRepository.save(conference);
             ConferenceApplication.applicationContext.getBean(javax.persistence.EntityManager.class).flush();
             return;
-        }
-        catch (Exception e)
-        {
-            System.out.println(e);
-        }
+//        }
+//        catch (Exception e)
+//        {
+//            System.out.println(e);
+//        }
 //        Optional<Conference> confOptional = ConferenceApplication.applicationContext.getBean(hifive.ConferenceRepository.class).findById(this.getConferenceId());
 //        Conference conference = confOptional.get();
 //        System.out.println("가져온 후 confernece");
@@ -66,6 +66,7 @@ public class Conference{
 
     @PreRemove //해당 엔티티를 삭제하기 전 (회의를 삭제하면 취소신청 이벤트 생성)
     public void onPreRemove(){
+        System.out.println("#################################### PreRemove : ConferenceId=" + this.getConferenceId());
         ApplyCanceled applyCanceled = new ApplyCanceled();
         applyCanceled.setConferenceId(this.getConferenceId());
         applyCanceled.setConferenceStatus("CANCELED");
@@ -74,41 +75,31 @@ public class Conference{
         //삭제하고 ApplyCanceled 이벤트 카프카에 전송
     }
 
-    @PostUpdate
-    public void onPostUpdate(){
-
-    }
-
     public Long getConferenceId() {
         return conferenceId;
     }
-
     public void setConferenceId(Long conferenceId) {
         this.conferenceId = conferenceId;
     }
+
     public String getStatus() {
         return status;
     }
-
     public void setStatus(String status) {
         this.status = status;
     }
+
     public Long getPayId() {
         return payId;
     }
-
     public void setPayId(Long payId) {
         this.payId = payId;
     }
+
     public Long getRoomNumber() {
         return roomNumber;
     }
-
     public void setRoomNumber(Long roomNumber) {
         this.roomNumber = roomNumber;
     }
-
-
-
-
 }
