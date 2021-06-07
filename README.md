@@ -838,6 +838,22 @@ Concurrency:		       96.02
 
 배포기간 동안 Availability 가 변화없기 때문에 무정지 재배포가 성공한 것으로 확인됨.
 
+
+## ConfigMap
+
+- 로컬환경 설정을 Cloud 환경정보로 변경 시 ConfigMap으로 설정 변경 관리
+
+- 리터럴 값으로부터 ConfigMap 생성
+![image](https://user-images.githubusercontent.com/81279673/121073309-4ef8f280-c80d-11eb-998e-d13b361d53e4.png)
+
+- 설정된 ConfigMap 정보 가져오기
+![image](https://user-images.githubusercontent.com/81279673/121073571-a1d2aa00-c80d-11eb-8137-2371f17d1393.png)
+![image](https://user-images.githubusercontent.com/81279673/121073595-a9924e80-c80d-11eb-80e5-88b40effb31b.png)
+
+- 관련된 프로그램(application.yaml, PayService.java) 적용
+![image](https://user-images.githubusercontent.com/81279673/121073814-fe35c980-c80d-11eb-980b-5dcc1c6d7019.png)
+![image](https://user-images.githubusercontent.com/81279673/121073824-ffff8d00-c80d-11eb-8bda-cc188492d138.png)
+
 ## Self-healing (Liveness Probe)
 - Pay 서비스에 kubectl apply -f deployment.yml 을 통해 liveness Probe 옵션 적용
 
