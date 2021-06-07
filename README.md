@@ -69,35 +69,34 @@
 
 
 ## AS-IS 조직 (Horizontally-Aligned)
-::TO-DO
+![image](https://user-images.githubusercontent.com/81279673/120967847-fee54600-c7a2-11eb-92dc-198f3c1ef19a.png)
 
 ## TO-BE 조직 (Vertically-Aligned)
-::TO-DO
+![image](https://user-images.githubusercontent.com/81279673/120967821-f55bde00-c7a2-11eb-97e5-a3895e1632ce.png)
 
 ## Event Storming 결과
 * MSAEZ 모델링한 이벤트스토밍 결과:  http://www.msaez.io/#/storming/pYauKq27pAMMO4ZZcMLRDtjzgIv1/share/40d9c225e0f9826deff3b8035d97b38f
 
 
 ### 이벤트 도출
-::TO-DO
+![image](https://user-images.githubusercontent.com/81279673/120964712-b3309d80-c79e-11eb-9e12-03e968f6f7fd.png)
 
 ### 부적격 이벤트 탈락
-::TO-DO
+![image](https://user-images.githubusercontent.com/81279673/120964787-cfccd580-c79e-11eb-9746-08b844f44181.png)
 
-- 과정중 도출된 잘못된 도메인 이벤트들을 걸러내는 작업을 수행함
-- 주문시>메뉴카테고리선택됨, 주문시>메뉴검색됨 :  UI 의 이벤트이지, 업무적인 의미의 이벤트가 아니라서 제외
+    - 과정 중 도출된 잘못된 도메인 이벤트들을 걸러내는 작업을 수행함
+    - 회의실 선택, 취소를 위한 신청건 선택, 결제버튼 선택, 결제버튼 선택은 UI이벤트이므로 대상에서 제외함
 
 ### 액터, 커맨드 부착하여 읽기 좋게
-::TO-DO
+![image](https://user-images.githubusercontent.com/81279673/120964860-effc9480-c79e-11eb-9858-89bf32d3ba2f.png)
 
 ### 어그리게잇으로 묶기
-::TO-DO
+![image](https://user-images.githubusercontent.com/81279673/120964886-f985fc80-c79e-11eb-837d-1302e29b4e9b.png)
 
-    - app의 Order, store 의 주문처리, 결제의 결제이력은 그와 연결된 command 와 event 들에 의하여 트랜잭션이 유지되어야 하는 단위로 그들 끼리 묶어줌
+    - 신청, 결제, 회의실 관리 어그리게잇을 생성하고 그와 연결된 command와 event들에 의하여 트랜잭션이 유지되어야 하는 단위로 묶어줌
 
 ### 바운디드 컨텍스트로 묶기
-::TO-DO
-
+![image](https://user-images.githubusercontent.com/81279673/120964904-07d41880-c79f-11eb-9049-88d11fa059a3.png)
 
     - 도메인 서열 분리 
         - Core Domain:  app(front), store : 없어서는 안될 핵심 서비스이며, 연견 Up-time SLA 수준을 99.999% 목표, 배포주기는 app 의 경우 1주일 1회 미만, store 의 경우 1개월 1회 미만
@@ -105,17 +104,16 @@
         - General Domain:   pay : 결제서비스로 3rd Party 외부 서비스를 사용하는 것이 경쟁력이 높음 (핑크색으로 이후 전환할 예정)
 
 ### 폴리시 부착 (괄호는 수행주체, 폴리시 부착을 둘째단계에서 해놔도 상관 없음. 전체 연계가 초기에 드러남)
-
-::TO-DO
+![image](https://user-images.githubusercontent.com/81279673/120964924-11f61700-c79f-11eb-9b3a-10cdf6ed50e4.png)
 
 ### 폴리시의 이동과 컨텍스트 매핑 (점선은 Pub/Sub, 실선은 Req/Resp)
-
-::TO-DO
+![image](https://user-images.githubusercontent.com/81279673/120964957-1c181580-c79f-11eb-8f31-00dd15712190.png)
 
 ### 완성된 1차 모형
-![eventstormin-1차](https://user-images.githubusercontent.com/80938080/119836974-246d8680-bf3d-11eb-86ab-01f6102a8778.png)
+![image](https://user-images.githubusercontent.com/81279673/120964986-276b4100-c79f-11eb-9a9a-ed94470edffd.png)
 
     - View Model 추가
+    - 팀원 중 외국인이 투입되어 유비쿼터스 랭귀지인 영어로 변경함	
 
 ### 1차 완성본에 대한 기능적/비기능적 요구사항을 커버하는지 검증
 ![eventstorming-기능적1](https://user-images.githubusercontent.com/80938080/119837765-d6a54e00-bf3d-11eb-9d79-f8308b90a0e8.png)
