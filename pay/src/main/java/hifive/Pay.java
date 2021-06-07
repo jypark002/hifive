@@ -54,38 +54,45 @@ public class Pay {
 //        BeanUtils.copyProperties(this, payCanceled);
         payCanceled.publishAfterCommit();
 
+        System.out.println(toString());
         System.out.println("********************* Pay PayCanceled End.");
     }
 
     public Long getPayId() {
         return payId;
     }
-
     public void setPayId(Long payId) {
         this.payId = payId;
     }
+
     public String getStatus() {
         return status;
     }
-
     public void setStatus(String status) {
         this.status = status;
     }
+
     public Long getConferenceId() {
         return conferenceId;
     }
-
     public void setConferenceId(Long conferenceId) {
         this.conferenceId = conferenceId;
     }
 
-
    public Long getRoomNumber() {
         return roomNumber;
     }
-
-    public void setRoomNumber(Long roomNumber) {
+   public void setRoomNumber(Long roomNumber) {
         this.roomNumber = roomNumber;
     }
 
+    @Override
+    public String toString() {
+        return "Pay{"
+                + "payId=" + payId
+                + ", status=" + status
+                + ", conferenceId=" + conferenceId
+                + ", roomNumber=" + roomNumber
+                + "}";
+    }
 }
