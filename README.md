@@ -146,18 +146,17 @@
     - 수정된 모델은 모든 요구사항을 커버함.
 
 ## 헥사고날 아키텍처 다이어그램 도출
-    
-<img width="1200" alt="헥사고날 최종" src="https://user-images.githubusercontent.com/80210609/120962597-00ab0b80-c79b-11eb-9917-7c271b2a2434.PNG">
+- 외부에서 들어오는 요청을 인바운드 포트를 호출해서 처리하는 인바운드 어댑터와 비즈니스 로직에서 들어온 요청을 회부 서비스를 호출해서 처리하는 아웃바운드 어댑터로 분리
+- 호출관계에서 Pub/Sub 과 Req/Resp 를 구분함
+- 서브 도메인과 바운디드 컨텍스트의 분리: 각 팀의 KPI 별로 아래와 같이 관심 구현 스토리를 나눠가짐
+- 회의(Conference)의 경우 Polyglot 적용을 위해 Hsql로 설계
 
-    - Chris Richardson, MSA Patterns 참고하여 Inbound adaptor와 Outbound adaptor를 구분함
-    - 호출관계에서 PubSub 과 Req/Resp 를 구분함
-    - 서브 도메인과 바운디드 컨텍스트의 분리:  각 팀의 KPI 별로 아래와 같이 관심 구현 스토리를 나눠가짐
-    - 컨퍼런스의 경우 Polyglot 검증을 위해 Hsql로 설계
+<img width="1200" alt="헥사고날 최종" src="https://user-images.githubusercontent.com/80210609/120962597-00ab0b80-c79b-11eb-9917-7c271b2a2434.PNG">
 
 
 # 구현:
 
-분석/설계 단계에서 도출된 헥사고날 아키텍처에 따라, 각 BC별로 대변되는 마이크로 서비스들을 스프링부트로 구현하였다. 구현한 각 서비스를 로컬에서 실행하는 방법은 아래와 같다. (각 서비스의 포트넘버는 8081 ~ 808n 이다)
+분석/설계 단계에서 도출된 헥사고날 아키텍처에 따라, 각 Bounded Context별로 마이크로서비스들을 스프링부트로 구현하였다. 구현한 각 서비스를 로컬에서 실행하는 방법은 아래와 같다. (각 서비스의 포트넘버는 8081 ~ 8084, 8088 이다)
 
 ```
 cd conference
@@ -171,29 +170,28 @@ mvn spring-boot:run
 
 cd customerCenter
 mvn spring-boot:run 
+
+cd gateway
+mvn spring-boot:run
 ```
 
 ## DDD 의 적용
 
-- msaez.io에서 DDD를 작성하고 Aggregate 단위로 Entity를 선언하고 구현을 진행하였다.
-  
-- 각 서비스내에 도출된 핵심 Aggregate Root 객체를 Entity 로 선언하였다: (예시는 conference 마이크로 서비스). 이때 가능한 현업에서 사용하는 언어 (유비쿼터스 랭귀지)를 그대로 사용하려고 노력했다. 하지만, 일부 구현에 있어서 영문이 아닌 경우는 실행이 불가능한 경우가 있기 때문에 계속 사용할 방법은 아닌것 같다. (Maven pom.xml, Kafka의 topic id, FeignClient 의 서비스 id 등은 한글로 식별자를 사용하는 경우 오류가 발생하는 것을 확인하였다)
+- msaez.io에서 이벤트스토밍을 통해 DDD를 작성하고 Aggregate 단위로 Entity를 선언하여 구현을 진행하였다.
 
 > Conference 서비스의 Conference.java
 ```java
 package hifive;
 
 import java.util.Optional;
+import javax.annotation.PostConstruct;
 import javax.persistence.*;
-import org.springframework.beans.BeanUtils;
-import java.util.List;
-import java.util.Date;
+
 import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @Entity
 @Table(name="Conference_table")
-public class Conference {
+public class Conference{
 
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
@@ -204,45 +202,37 @@ public class Conference {
 
     @PostPersist //해당 엔티티를 저장한 후
     public void onPostPersist(){
-        // 회의가 저장되면, pay에 request를 보낸다.
+        //회의가 저장되면, pay에 request를 보낸다.
         // 회의 상태 : CREATED | PAID | ASSIGNED | CANCELED
         setStatus("CREATED");
-        
         Applied applied = new Applied();
+        //BeanUtils.copyProperties는 원본객체의 필드 값을 타겟 객체의 필드값으로 복사하는 유틸인데, 필드이름과 타입이 동일해야함.
         applied.setConferenceId(this.getConferenceId());
         applied.setConferenceStatus(this.getStatus());
         applied.setRoomNumber(this.getRoomNumber());
-        //신청내역이 카프카에 올라감
         applied.publishAfterCommit();
-        
-        Map<String,String> res = ConferenceApplication.applicationContext
-                                                      .getBean(hifive.external.PayService.class)
-                                                      .paid(this.getStatus(),this.getConferenceId(),this.getRoomNumber());
-        
-        //결제 아이디가 있고, 결제 상태로 돌아온 경우 회의 상태로 결제로 바꾼다.
-        if(this.getPayId() != null && res.get("status").equals("PAID")){
-            this.setStatus("PAID");
+        //신청내역이 카프카에 올라감
+        try {
+            Map<String, String> res = ConferenceApplication.applicationContext
+                    .getBean(hifive.external.PayService.class)
+                    .paid(applied);
+            //결제 아이디가 있고, 결제 상태로 돌아온 경우 회의 상태로 결제로 바꾼다.
+            if (res.get("status").equals("Req_complete")) {
+                this.setStatus("Req complete");
+            }
+            this.setPayId(Long.valueOf(res.get("payid")));
+            ConferenceApplication.applicationContext.getBean(javax.persistence.EntityManager.class).flush();
+            return;
         }
-        
-        this.setPayId(Long.valueOf(res.get("payid")));
-
-        System.out.println("저장된 후 confernece");
-        System.out.println(this.getConferenceId());
-        System.out.println(this.getPayId());
-        System.out.println(this.getStatus());
-        ConferenceApplication.applicationContext.getBean(hifive.ConferenceRepository.class).save(this);
-
-        Optional<Conference> confOptional = ConferenceApplication.applicationContext.getBean(hifive.ConferenceRepository.class).findById(this.getConferenceId());
-        Conference conference = confOptional.get();
-        System.out.println("가져온 후 confernece");
-        System.out.println(conference.getConferenceId());
-        System.out.println(conference.getPayId());
-        System.out.println(conference.getStatus());
+        catch (Exception e)
+        {
+            System.out.println(e);
+        }
     }
 
     @PreRemove //해당 엔티티를 삭제하기 전 (회의를 삭제하면 취소신청 이벤트 생성)
     public void onPreRemove(){
-    
+        System.out.println("#################################### PreRemove : ConferenceId=" + this.getConferenceId());
         ApplyCanceled applyCanceled = new ApplyCanceled();
         applyCanceled.setConferenceId(this.getConferenceId());
         applyCanceled.setConferenceStatus("CANCELED");
@@ -250,7 +240,7 @@ public class Conference {
         applyCanceled.publishAfterCommit();
         //삭제하고 ApplyCanceled 이벤트 카프카에 전송
     }
-    
+
     public Long getConferenceId() {
         return conferenceId;
     }
@@ -278,13 +268,12 @@ public class Conference {
     public void setRoomNumber(Long roomNumber) {
         this.roomNumber = roomNumber;
     }
-
 }
 ```
 
-- Entity Pattern 과 Repository Pattern 을 적용하여 JPA 를 통하여 다양한 데이터소스 유형 (RDB or NoSQL) 에 대한 별도의 처리가 없도록 데이터 접근 어댑터를 자동 생성하기 위하여 Spring Data REST 의 RestRepository 를 적용하였다.
+- Entity Pattern 과 Repository Pattern 을 적용하여 JPA 기반의 다양한 데이터소스 유형 (RDB or NoSQL) 에 대한 별도의 처리 없이 데이터 접근 어댑터를 자동 생성하기 위하여 Spring Data REST 의 RestRepository 를 적용하였다.
 
-> Conference 서비스의 
+> Conference 서비스의 ConferenceRepository.java
 ```java
 package hifive;
 
@@ -335,16 +324,24 @@ http post http://localhost:8081/conferences status="" payId=0 roomNumber=1
 # conference 서비스의 회의실 신청 취소
 http delete http://localhost:8081/conferences/1
 
-# 주문 상태 확인
+# 회의실 상태 확인
 http GET http://localhost:8084/roomStates
 ```
+> 회의실 신청 후 Conference 동작 결과
+![Cap 2021-06-07 21-39-53-966](https://user-images.githubusercontent.com/80938080/121018071-f60f6700-c7d8-11eb-889d-fb674d1e8189.png)
 
+## CQRS
+
+- Materialized View 구현을 통해 다른 마이크로서비스의 데이터 원본에 접근없이 내 서비스의 화면 구성과 잦은 조회가 가능하게 하였습니다. 본 과제에서 View 서비스는 CustomerCenter 서비스가 수행하며 회의실 상태를 보여준다.
+
+> 회의실 신청 후 customerCenter 결과
+![Cap 2021-06-07 22-08-17-580](https://user-images.githubusercontent.com/80938080/121022024-edb92b00-c7dc-11eb-872b-23b51f1b1d57.png)
 
 ## 폴리글랏 퍼시스턴스
 
-회의실 (conference)의 경우 H2 DB인 결제(pay)/회의실(room) 서비스와 달리 Hsql로 구현하여 MSA의 서비스간 서로 다른 종류의 DB에도 문제없이 동작하여 다형성을 만족하는지 확인하였다.
+- 회의(conference)의 경우 H2 DB인 결제(pay)/회의실(room) 서비스와 달리 Hsql로 구현하여 MSA의 서비스간 서로 다른 종류의 DB에도 문제없이 동작하여 다형성을 만족하는지 확인하였다.
 
-pay, room 서비스의 pom.xml 설정
+> pay, room 서비스의 pom.xml 설정
 ```xml
     <dependency>
         <groupId>com.h2database</groupId>
@@ -352,7 +349,7 @@ pay, room 서비스의 pom.xml 설정
         <scope>runtime</scope>
     </dependency>
 ```
-conference 서비스의 pom.xml 설정
+> conference 서비스의 pom.xml 설정
 ```xml
     <dependency>
         <groupId>org.hsqldb</groupId>
@@ -361,8 +358,8 @@ conference 서비스의 pom.xml 설정
     </dependency>
 ```
 ## Gateway 적용
-
-gateway > application.xml 설정
+- API Gateway를 통하여 마이크로서비스들의 진입점을 단일화하였습니다.
+> gateway > application.xml 설정
 ```yaml
 spring:
   profiles: docker
@@ -399,63 +396,58 @@ spring:
 server:
   port: 8080
 ```
-gateway 테스트
-```
-http POST http://gateway:8080/conferences status="" payId=0 roomNumber=10
-```
 
-## 동기식 호출 과 Fallback 처리 <======= 여기부터 확인
+## 동기식 호출 과 Fallback 처리
 
-분석단계에서의 조건 중 하나로 Conference->Pay 간의 호출은 동기식 일관성을 유지하는 트랜잭션으로 처리하기로 하였다. 호출 프로토콜은 이미 앞서 Rest Repository 에 의해 노출되어있는 REST 서비스를 FeignClient 를 이용하여 호출하도록 한다. 
+분석단계에서의 조건 중 하나로 Conference -> Pay 간의 호출은 동기식 일관성을 유지하는 트랜잭션으로 처리하기로 하였다. 호출 프로토콜은 이미 앞서 Rest Repository 에 의해 노출되어있는 REST 서비스를 FeignClient 를 이용하여 호출하도록 한다. 
 
 - 결제서비스를 호출하기 위하여 Stub과 (FeignClient) 를 이용하여 Service 대행 인터페이스 (Proxy) 를 구현 
 
-```
-# (Pay) PayService.java
+> Pay 서비스의 external\PayService.java
 
+```java
 package hifive.external;
 
-@FeignClient(name="pay", url="http://localhost:8082")
+@FeignClient(name="pay", url="http://pay:8080")
 public interface PayService {
 
     @RequestMapping(method= RequestMethod.GET, path="/pays/paid")
     public Map<String,String> paid(@RequestParam("status") String status, @RequestParam("conferenceId") Long conferenceId, @RequestParam("roomNumber") Long roomNumber);
-  
 }
 ```
 
 - 예약을 받은 직후(@PostPersist) 결제를 요청하도록 처리
-```
-# Conference.java (Entity)
 
+> Conference 서비스의 Conference.java (Entity)
+
+```java
     @PostPersist //해당 엔티티를 저장한 후
     public void onPostPersist(){
-         //회의가 저장되면, pay에 request를 보낸다.
-         // 회의 상태 : CREATED | PAID | ASSIGNED | CANCELED
-
     
+        setStatus("CREATED");
         Applied applied = new Applied();
+        //BeanUtils.copyProperties는 원본객체의 필드 값을 타겟 객체의 필드값으로 복사하는 유틸인데, 필드이름과 타입이 동일해야함.
         applied.setConferenceId(this.getConferenceId());
         applied.setConferenceStatus(this.getStatus());
         applied.setRoomNumber(this.getRoomNumber());
         applied.publishAfterCommit();
-  
-   
-        Map<String,String> res = ConferenceApplication.applicationContext
-                                                      .getBean(hifive.external.PayService.class)
-                                                      .paid(this.getStatus(),this.getConferenceId(),this.getRoomNumber());
-     
-        if(this.getPayId() != null && res.get("status").equals("PAID")){
-            this.setStatus("PAID");
+        //신청내역이 카프카에 올라감
+        try {
+            // 결제 서비스 Request
+            Map<String, String> res = ConferenceApplication.applicationContext
+                    .getBean(hifive.external.PayService.class)
+                    .paid(applied);
+            //결제 아이디가 있고, 결제 상태로 돌아온 경우 회의 상태로 결제로 바꾼다.
+            if (res.get("status").equals("Req_complete")) {
+                this.setStatus("Req complete");
+            }
+            this.setPayId(Long.valueOf(res.get("payid")));
+            ConferenceApplication.applicationContext.getBean(javax.persistence.EntityManager.class).flush();
+            return;
         }
-        
-        this.setPayId(Long.valueOf(res.get("payid")));
-     
-        ConferenceApplication.applicationContext.getBean(hifive.ConferenceRepository.class).save(this);
-
-        Optional<Conference> confOptional = ConferenceApplication.applicationContext.getBean(hifive.ConferenceRepository.class).findById(this.getConferenceId());
-        Conference conference = confOptional.get();
-        
+        catch (Exception e) {
+            System.out.println(e);
+        }
     }
 ```
 
@@ -465,12 +457,15 @@ public interface PayService {
 ```
 # 결제 (pay) 서비스를 잠시 내려놓음 (ctrl+c)
 
-#주문처리
+# 결제 처리
 http post http://localhost:8081/conferences status="" payId=0 roomNumber=1   #Fail
 http post http://localhost:8081/conferences status="" payId=0 roomNumber=2   #Fail
-
+```
+> 결제 요청 오류 발생
+![Cap 2021-06-07 22-24-26-184](https://user-images.githubusercontent.com/80938080/121024411-28bc5e00-c7df-11eb-9a84-d3095683d49c.png)
+```
 #결제서비스 재기동
-cd 결제
+cd pay
 mvn spring-boot:run
 
 #주문처리
@@ -478,28 +473,7 @@ http post http://localhost:8081/conferences status="" payId=0 roomNumber=1   #Su
 http post http://localhost:8081/conferences status="" payId=0 roomNumber=2   #Success
 ```
 
-- 동기식 호출에서는 호출 시간에 따른 타임 커플링이 발생하며, 결제 시스템이 장애가 나면 주문도 못받는다는 것을 확인:
-
-
-```
-# 결제 (pay) 서비스를 잠시 내려놓음 (ctrl+c)
-
-#주문처리
-http localhost:8081/orders item=통닭 storeId=1   #Fail
-http localhost:8081/orders item=피자 storeId=2   #Fail
-
-#결제서비스 재기동
-cd 결제
-mvn spring-boot:run
-
-#주문처리
-http localhost:8081/orders item=통닭 storeId=1   #Success
-http localhost:8081/orders item=피자 storeId=2   #Success
-```
-
 - 또한 과도한 요청시에 서비스 장애가 도미노 처럼 벌어질 수 있다. (서킷브레이커, 폴백 처리는 운영단계에서 설명한다.)
-
-
 
 
 ## 비동기식 호출 / 시간적 디커플링 / 장애격리 / 최종 (Eventual) 일관성 테스트
