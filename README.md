@@ -840,14 +840,13 @@ Concurrency:		       96.02
 
 
 ## ConfigMap
-
-- 로컬환경 설정을 Cloud 환경정보로 변경 시 ConfigMap으로 설정 변경 관리
-
+- 로컬환경 설정을 Cloud 환경정보로 변경 시 ConfigMap으로 설정함
+- 
 - 리터럴 값으로부터 ConfigMap 생성
 ![image](https://user-images.githubusercontent.com/81279673/121073309-4ef8f280-c80d-11eb-998e-d13b361d53e4.png)
 
 - 설정된 ConfigMap 정보 가져오기
-![image](https://user-images.githubusercontent.com/81279673/121073571-a1d2aa00-c80d-11eb-8137-2371f17d1393.png)
+![image](https://user-images.githubusercontent.com/81279673/121074021-42c16500-c80e-11eb-8db8-2497dcc099e1.png)
 ![image](https://user-images.githubusercontent.com/81279673/121073595-a9924e80-c80d-11eb-80e5-88b40effb31b.png)
 
 - 관련된 프로그램(application.yaml, PayService.java) 적용
