@@ -872,7 +872,11 @@ Concurrency:		       96.02
 - Pay 서비스에 kubectl apply -f deployment.yml 을 통해 liveness Probe 옵션 적용
 
 - liveness probe 옵션을 추가
-
+- initialDelaySeconds: 10
+- timeoutSeconds: 2
+- periodSeconds: 5
+- failureThreshold: 5
+                 
 
   ![스크린샷 2021-06-07 오후 9 30 09](https://user-images.githubusercontent.com/40500484/121017733-92853980-c7d8-11eb-969a-284f88aece6f.png)
 
@@ -883,7 +887,9 @@ Concurrency:		       96.02
 - Http Get Pay/live를 통해서 컨테이너 상태 실시간 확인 및 재시동 
 
   
-  ![스크린샷 2021-06-07 오후 9 27 45](https://user-images.githubusercontent.com/40500484/121018097-032c5600-c7d9-11eb-822b-b2eda4238819.png)
+  ![스크린샷 2021-06-07 오후 9 45 31](https://user-images.githubusercontent.com/40500484/121018788-c9a81a80-c7d9-11eb-9013-1a68ccf1a9b1.png)
+
+
 
 
 # 신규 개발 조직의 추가
