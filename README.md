@@ -744,28 +744,33 @@ Shortest transaction:	        0.00
 - Retry 의 설정 (istio)
 - Availability 가 높아진 것을 확인 (siege)
 
-### 오토스케일 아웃
+## 오토스케일 아웃
 앞서 CB 는 시스템을 안정되게 운영할 수 있게 해줬지만 사용자의 요청을 100% 받아들여주지 못했기 때문에 이에 대한 보완책으로 자동화된 확장 기능을 적용하고자 한다. 
 
 
 - 신청서비스에 대한 replica 를 동적으로 늘려주도록 HPA 를 설정한다. 설정은 CPU 사용량이 15프로를 넘어서면 replica 를 10개까지 늘려준다:
 ```
-kubectl autoscale deploy pay --min=1 --max=10 --cpu-percent=15
+kubectl autoscale deploy confenrence --min=1 --max=10 --cpu-percent=15
 ```
+
+- hpa 설정 확인
+<img width="400" alt="스케일아웃" src="https://user-images.githubusercontent.com/80210609/121055667-6c6f9180-c7f8-11eb-9db7-28e79a2ede43.PNG">
+
+
 - CB 에서 했던 방식대로 워크로드를 2분 동안 걸어준다.
 ```
 siege -c100 -t60S -r10 -v --content-type "application/json" 'http://conference:8080/conferences POST {"roomNumber": "123"}'
 ```
 - 오토스케일이 어떻게 되고 있는지 모니터링을 걸어둔다:
 ```
-kubectl get deploy pay -w
+kubectl get deploy conference -w
 ```
 
 - 어느정도 시간이 흐른 후 (약 30초) 스케일 아웃이 벌어지는 것을 확인할 수 있다:
-<img width="1200" alt="스케일아웃-최종" src="https://user-images.githubusercontent.com/80210609/121054342-37af0a80-c7f7-11eb-848c-58a7cf418cb9.PNG">
+<img width="800" alt="스케일아웃-최종" src="https://user-images.githubusercontent.com/80210609/121054342-37af0a80-c7f7-11eb-848c-58a7cf418cb9.PNG">
 
 - siege 의 로그를 보아도 전체적인 성공률이 높아진 것을 확인 할 수 있다. 
-<img width="700" alt="스케일아웃" src="https://user-images.githubusercontent.com/80210609/121053305-2ca7aa80-c7f6-11eb-9ce3-ad57c2479a33.PNG">
+<img width="500" alt="스케일아웃" src="https://user-images.githubusercontent.com/80210609/121053305-2ca7aa80-c7f6-11eb-9ce3-ad57c2479a33.PNG">
 
 
 
