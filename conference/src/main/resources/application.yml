@@ -72,13 +72,3 @@ spring:
         event-out:
           destination: hifive
           contentType: application/json
-fein:
-  hystrix:
-    enabled: true
-hystrix:
-  command:
-    default:
-      execution.isolation.tread.timeoutInMilliseconds: 610
-api:
-  url:
-    pay: ${configurl}
