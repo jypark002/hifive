@@ -72,4 +72,3 @@ spring:
         event-out:
           destination: hifive
           contentType: application/json
----
