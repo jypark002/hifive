@@ -1,9 +1,6 @@
-logging:
-  level:
-    org.hibernate.type: trace
-    org.springframework.cloud: debug
 server:
-  port: 8082
+  port: 8080
+---
 
 spring:
   h2:
@@ -37,14 +34,19 @@ spring:
                   serde: org.apache.kafka.common.serialization.Serdes$StringSerde
       bindings:
         event-in:
-          group: pay
+          group: conference
           destination: hifive
           contentType: application/json
         event-out:
           destination: hifive
           contentType: application/json
 
-
+logging:
+  level:
+    org.hibernate.type: trace
+    org.springframework.cloud: debug
+server:
+  port: 8081
 ---
 
 spring:
@@ -64,10 +66,19 @@ spring:
                   serde: org.apache.kafka.common.serialization.Serdes$StringSerde
       bindings:
         event-in:
-          group: pay
+          group: conference
           destination: hifive
           contentType: application/json
         event-out:
           destination: hifive
           contentType: application/json
----
+fein:
+  hystrix:
+    enabled: true
+hystrix:
+  command:
+    default:
+      execution.isolation.tread.timeoutInMilliseconds: 610
+api:
+  url:
+    pay: ${configurl}
