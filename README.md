@@ -754,7 +754,7 @@ kubectl autoscale deploy confenrence --min=1 --max=10 --cpu-percent=15
 ```
 
 - hpa 설정 확인
-<img width="700" alt="스케일아웃" src="https://user-images.githubusercontent.com/80210609/121055667-6c6f9180-c7f8-11eb-9db7-28e79a2ede43.PNG">
+<img width="600" alt="스케일아웃" src="https://user-images.githubusercontent.com/80210609/121055667-6c6f9180-c7f8-11eb-9db7-28e79a2ede43.PNG">
 
 
 - CB 에서 했던 방식대로 워크로드를 2분 동안 걸어준다.
@@ -767,7 +767,7 @@ kubectl get deploy conference -w
 ```
 
 - 어느정도 시간이 흐른 후 스케일 아웃이 벌어지는 것을 확인할 수 있다:
-<img width="800" alt="스케일최종" src="https://user-images.githubusercontent.com/80210609/121056827-937a9300-c7f9-11eb-9ebc-ca86c271d3c3.PNG">
+<img width="700" alt="스케일최종" src="https://user-images.githubusercontent.com/80210609/121056827-937a9300-c7f9-11eb-9ebc-ca86c271d3c3.PNG">
 
 - siege 의 로그를 보아도 전체적인 성공률이 높아진 것을 확인 할 수 있다. 
 <img width="700" alt="상태" src="https://user-images.githubusercontent.com/80210609/121057028-cde43000-c7f9-11eb-88d2-c022dddca49f.PNG">
