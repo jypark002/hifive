@@ -762,26 +762,11 @@ kubectl get deploy pay -w
 ```
 
 - 어느정도 시간이 흐른 후 (약 30초) 스케일 아웃이 벌어지는 것을 확인할 수 있다:
-<img width="333" alt="스케일아웃-최종" src="https://user-images.githubusercontent.com/80210609/121054342-37af0a80-c7f7-11eb-848c-58a7cf418cb9.PNG">
-```
-NAME    DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
-pay     1         1         1            1           17s
-pay     1         2         1            1           45s
-pay     1         4         1            1           1m
-:
-```
+<img width="1200" alt="스케일아웃-최종" src="https://user-images.githubusercontent.com/80210609/121054342-37af0a80-c7f7-11eb-848c-58a7cf418cb9.PNG">
+
 - siege 의 로그를 보아도 전체적인 성공률이 높아진 것을 확인 할 수 있다. 
-<img width="273" alt="스케일아웃" src="https://user-images.githubusercontent.com/80210609/121053305-2ca7aa80-c7f6-11eb-9ce3-ad57c2479a33.PNG">
-```
-Transactions:		        5078 hits
-Availability:		       92.45 %
-Elapsed time:		       120 secs
-Data transferred:	        0.34 MB
-Response time:		        5.60 secs
-Transaction rate:	       17.15 trans/sec
-Throughput:		        0.01 MB/sec
-Concurrency:		       96.02
-```
+<img width="700" alt="스케일아웃" src="https://user-images.githubusercontent.com/80210609/121053305-2ca7aa80-c7f6-11eb-9ce3-ad57c2479a33.PNG">
+
 
 
 ## 무정지 재배포
