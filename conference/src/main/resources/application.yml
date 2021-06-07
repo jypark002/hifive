@@ -6,14 +6,13 @@ spring:
   h2:
     console:
       enabled: true
-  profiles:
-    active: local
-  datasource:
-    hikari:
-      jdbc-url: jdbc:h2:./data/testdb
-      driver-class-name: org.h2.Driver
-      username: sa
-      password:
+  profiles: default
+#  datasource:
+#    hikari:
+#      jdbc-url: jdbc:h2:./data/testdb
+#      driver-class-name: org.h2.Driver
+#      username: sa
+#      password:
   jpa:
     properties:
       hibernate:
