@@ -1,9 +1,6 @@
-logging:
-  level:
-    org.hibernate.type: trace
-    org.springframework.cloud: debug
 server:
-  port: 8082
+  port: 8080
+---
 
 spring:
   h2:
@@ -44,7 +41,12 @@ spring:
           destination: hifive
           contentType: application/json
 
-
+logging:
+  level:
+    org.hibernate.type: trace
+    org.springframework.cloud: debug
+server:
+  port: 8082
 ---
 
 spring:
