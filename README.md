@@ -148,11 +148,12 @@
 
 ## 헥사고날 아키텍처 다이어그램 도출
     
-::TO-DO
+<img width="1200" alt="헥사고날 최종" src="https://user-images.githubusercontent.com/80210609/120962597-00ab0b80-c79b-11eb-9917-7c271b2a2434.PNG">
 
     - Chris Richardson, MSA Patterns 참고하여 Inbound adaptor와 Outbound adaptor를 구분함
     - 호출관계에서 PubSub 과 Req/Resp 를 구분함
     - 서브 도메인과 바운디드 컨텍스트의 분리:  각 팀의 KPI 별로 아래와 같이 관심 구현 스토리를 나눠가짐
+    - 컨퍼런스의 경우 Polyglot 검증을 위해 Hsql로 설계
 
 
 # 구현:
@@ -406,37 +407,76 @@ http POST http://gateway:8080/conferences status="" payId=0 roomNumber=10
 
 ## 동기식 호출 과 Fallback 처리 <======= 여기부터 확인
 
-분석단계에서의 조건 중 하나로 주문(app)->결제(pay) 간의 호출은 동기식 일관성을 유지하는 트랜잭션으로 처리하기로 하였다. 호출 프로토콜은 이미 앞서 Rest Repository 에 의해 노출되어있는 REST 서비스를 FeignClient 를 이용하여 호출하도록 한다. 
+분석단계에서의 조건 중 하나로 Conference->Pay 간의 호출은 동기식 일관성을 유지하는 트랜잭션으로 처리하기로 하였다. 호출 프로토콜은 이미 앞서 Rest Repository 에 의해 노출되어있는 REST 서비스를 FeignClient 를 이용하여 호출하도록 한다. 
 
 - 결제서비스를 호출하기 위하여 Stub과 (FeignClient) 를 이용하여 Service 대행 인터페이스 (Proxy) 를 구현 
 
 ```
-# (app) 결제이력Service.java
+# (Pay) PayService.java
 
-package fooddelivery.external;
+package hifive.external;
 
-@FeignClient(name="pay", url="http://localhost:8082")//, fallback = 결제이력ServiceFallback.class)
-public interface 결제이력Service {
+@FeignClient(name="pay", url="http://localhost:8082")
+public interface PayService {
 
-    @RequestMapping(method= RequestMethod.POST, path="/결제이력s")
-    public void 결제(@RequestBody 결제이력 pay);
-
+    @RequestMapping(method= RequestMethod.GET, path="/pays/paid")
+    public Map<String,String> paid(@RequestParam("status") String status, @RequestParam("conferenceId") Long conferenceId, @RequestParam("roomNumber") Long roomNumber);
+  
 }
 ```
 
-- 주문을 받은 직후(@PostPersist) 결제를 요청하도록 처리
+- 예약을 받은 직후(@PostPersist) 결제를 요청하도록 처리
 ```
-# Order.java (Entity)
+# Conference.java (Entity)
 
-    @PostPersist
+    @PostPersist //해당 엔티티를 저장한 후
     public void onPostPersist(){
+         //회의가 저장되면, pay에 request를 보낸다.
+         // 회의 상태 : CREATED | PAID | ASSIGNED | CANCELED
 
-        fooddelivery.external.결제이력 pay = new fooddelivery.external.결제이력();
-        pay.setOrderId(getOrderId());
+    
+        Applied applied = new Applied();
+        applied.setConferenceId(this.getConferenceId());
+        applied.setConferenceStatus(this.getStatus());
+        applied.setRoomNumber(this.getRoomNumber());
+        applied.publishAfterCommit();
+  
+   
+        Map<String,String> res = ConferenceApplication.applicationContext
+                                                      .getBean(hifive.external.PayService.class)
+                                                      .paid(this.getStatus(),this.getConferenceId(),this.getRoomNumber());
+     
+        if(this.getPayId() != null && res.get("status").equals("PAID")){
+            this.setStatus("PAID");
+        }
         
-        Application.applicationContext.getBean(fooddelivery.external.결제이력Service.class)
-                .결제(pay);
+        this.setPayId(Long.valueOf(res.get("payid")));
+     
+        ConferenceApplication.applicationContext.getBean(hifive.ConferenceRepository.class).save(this);
+
+        Optional<Conference> confOptional = ConferenceApplication.applicationContext.getBean(hifive.ConferenceRepository.class).findById(this.getConferenceId());
+        Conference conference = confOptional.get();
+        
     }
+```
+
+- 동기식 호출에서는 호출 시간에 따른 타임 커플링이 발생하며, 결제 시스템이 장애가 나면 예약도 못받는다는 것을 확인:
+
+
+```
+# 결제 (pay) 서비스를 잠시 내려놓음 (ctrl+c)
+
+#주문처리
+http post http://localhost:8081/conferences status="" payId=0 roomNumber=1   #Fail
+http post http://localhost:8081/conferences status="" payId=0 roomNumber=2   #Fail
+
+#결제서비스 재기동
+cd 결제
+mvn spring-boot:run
+
+#주문처리
+http post http://localhost:8081/conferences status="" payId=0 roomNumber=1   #Success
+http post http://localhost:8081/conferences status="" payId=0 roomNumber=2   #Success
 ```
 
 - 동기식 호출에서는 호출 시간에 따른 타임 커플링이 발생하며, 결제 시스템이 장애가 나면 주문도 못받는다는 것을 확인:
