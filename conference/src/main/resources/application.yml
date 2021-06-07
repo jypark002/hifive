@@ -77,7 +77,7 @@ feign:
 hystrix:
   command:
     default:
-      execution.isolation.thread.timeoutInMilliseconds: 450
+      execution.isolation.thread.timeoutInMilliseconds: 410
 api:
   url:
     pay: ${configurl}
