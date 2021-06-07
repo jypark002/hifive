@@ -11,12 +11,12 @@ spring:
       enabled: true
   profiles:
     active: local
-  datasource:
-    hikari:
-      jdbc-url: jdbc:h2:./data/testdb
-      driver-class-name: org.h2.Driver
-      username: sa
-      password:
+#  datasource:
+#    hikari:
+#      jdbc-url: jdbc:h2:./data/paydb
+#      driver-class-name: org.h2.Driver
+#      username: sa
+#      password:
   jpa:
     properties:
       hibernate:
