@@ -25,6 +25,7 @@ public class PayController {
         Pay pay = new Pay();
         pay.setConferenceId(con_id);
         pay.setStatus(status);
+        pay.setRoomNumber(room_no);
         payRepository.save(pay);
         Map<String,String> res = new HashMap<>();
         res.put("status","Req_complete");
