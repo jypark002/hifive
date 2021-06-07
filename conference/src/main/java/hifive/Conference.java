@@ -23,14 +23,7 @@ public class Conference{
     public void onPostPersist(){
         //회의가 저장되면, pay에 request를 보낸다.
          // 회의 상태 : CREATED | PAID | ASSIGNED | CANCELED
-        System.out.println("\n저장되고");
-        System.out.println(this.getStatus()+" "+this.getConferenceId()+" " +this.getRoomNumber()+ " "+this.getPayId());
         setStatus("CREATED");
-        System.out.println(this.getStatus());
-
-        
-        System.out.println("#####################################");
-        System.out.println("회의를 신청 하면 created 되고, Applied 이벤트 내용이 카프카에 올라가고, (결제가 된 내용이 response로 온다.)-이건 테스트용 ");
         Applied applied = new Applied();
         //BeanUtils.copyProperties는 원본객체의 필드 값을 타겟 객체의 필드값으로 복사하는 유틸인데, 필드이름과 타입이 동일해야함.
         applied.setConferenceId(this.getConferenceId());
@@ -38,15 +31,10 @@ public class Conference{
         applied.setRoomNumber(this.getRoomNumber());
         applied.publishAfterCommit();
         //신청내역이 카프카에 올라감
-        System.out.println("applied값 확인");
-        System.out.println("[ conferenceId : "+applied.getConferenceId()+", status : " + applied.getConferenceStatus() + ", roomNumber : "+ applied.getRoomNumber()+" ]");
         try {
             Map<String, String> res = ConferenceApplication.applicationContext
                     .getBean(hifive.external.PayService.class)
                     .paid(applied);
-            System.out.println("res값 확인");
-            System.out.println("[ msg : " + res.get("msg") + ", status : " + res.get("status") + "\n payid : " + res.get("payid") + " ]");
-            System.out.println("#####################################");
             //결제 아이디가 있고, 결제 상태로 돌아온 경우 회의 상태로 결제로 바꾼다.
             if (res.get("status").equals("Req_complete")) {
                 this.setStatus("Req complete");
@@ -55,11 +43,6 @@ public class Conference{
             // Conference conference = confOptional.get();
             this.setPayId(Long.valueOf(res.get("payid")));
             // conferenceRepository.save(conference);
-
-            System.out.println("저장된 후 confernece");
-            System.out.println(this.getConferenceId());
-            System.out.println(this.getPayId());
-            System.out.println(this.getStatus());
             ConferenceApplication.applicationContext.getBean(javax.persistence.EntityManager.class).flush();
             return;
         }
