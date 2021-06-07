@@ -115,21 +115,18 @@
     - View Model 추가
     - 팀원 중 외국인이 투입되어 유비쿼터스 랭귀지인 영어로 변경함	
 
-### 1차 완성본에 대한 기능적/비기능적 요구사항을 커버하는지 검증
-![eventstorming-기능적1](https://user-images.githubusercontent.com/80938080/119837765-d6a54e00-bf3d-11eb-9d79-f8308b90a0e8.png)
+### 기능적 요구사항 검증
+![image](https://user-images.githubusercontent.com/81279673/120969885-ab282c00-c7a5-11eb-9dcc-aafb74c4d962.png)
 
+    - 회의실 관리자가 회의실을 등록한다 (ok)
     - 고객이 회의실을 신청한다. (ok)
-    - 고객이 결제한다 (ok)
-    - 신청이 되면 회의실 관리자에게 전달된다 (ok)
-    - 회의실 관리자는 회의실을 할당하고 현황을 업데이트 한다 (ok)
-    
+    - 고객이 결제한다 (ok)    
+    - 회의실이 할당되면 회의실 현황이 업데이트 된다 (ok)    
 
-![eventstorming-기능적2](https://user-images.githubusercontent.com/80938080/119837823-e2911000-bf3d-11eb-8f16-8edb9c1eb603.png)
+![image](https://user-images.githubusercontent.com/81279673/120969797-9186e480-c7a5-11eb-8582-35a2517616e5.png)
 
     - 고객이 신청을 취소할 수 있다. (ok)
-    - 신청이 취소되면 회의실 할당을 취소하고 현황을 업데이트 한다. (ok)
-    - 회의실 현황은 언제나 확인할 수 있다. (View-green sticker 의 추가로 ok) 
-    - 회의실 취소가 되면 알림을 보낸다. (?)
+    - 신청이 취소되면 회의실 할당을 취소한다. (ok)
 
 ### 비기능 요구사항에 대한 검증
 ![eventstormin-수정](https://user-images.githubusercontent.com/80938080/119837166-4b2bbd00-bf3d-11eb-94bb-85bcae7d3491.png)
