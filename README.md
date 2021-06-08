@@ -22,7 +22,7 @@
     - [동기식 호출 / 서킷 브레이킹 / 장애격리](#동기식-호출-서킷-브레이킹-장애격리)
     - [오토스케일아웃 (HPA)](#오토스케일아웃_(HPA))
     - [ConfigMap](#ConfigMap)
-    - [Zero-downtime deploy (Readiness Probe)](#Zero-downtime_deploy_(Readiness Probe))
+    - [Zero-downtime deploy (Readiness Probe)](#Zero-downtime_deploy_(Readiness_Probe))
     - [Self-healing (Liveness Probe)](#Self-healing_(Liveness_Probe))
 
 
