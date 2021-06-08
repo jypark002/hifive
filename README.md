@@ -806,9 +806,7 @@ Concurrency:		       96.02
 - periodSeconds: 5
 - failureThreshold: 5
                  
-
-  ![스크린샷 2021-06-07 오후 9 30 09](https://user-images.githubusercontent.com/40500484/121017733-92853980-c7d8-11eb-969a-284f88aece6f.png)
-
+  ![스크린샷 2021-06-08 오후 2 16 45](https://user-images.githubusercontent.com/40500484/121127061-2cde8f00-c864-11eb-8b4f-7d3abcba60b3.png)
 
 
 - Pay 서비스에 liveness가 적용된 것을 확인
