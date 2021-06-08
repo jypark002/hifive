@@ -483,14 +483,13 @@ http post http://localhost:8081/conferences status="" payId=0 roomNumber=2   #Su
 - 이를 위하여 결제이력에 기록을 남긴 후에 곧바로 결제승인이 되었다는 도메인 이벤트를 카프카로 송출한다(Publish)
  
 ```
-package fooddelivery;
+package hifive;
 
 @Entity
 @Table(name="결제이력_table")
 public class 결제이력 {
 
- ...
-    @Entity
+@Entity
 @Table(name="Pay_table")
 public class Pay {
 
@@ -534,7 +533,6 @@ public class Pay {
 ```
 package hifive;
 
-...
 
 @Service
 public class PolicyHandler{
@@ -594,7 +592,8 @@ http localhost:8080/conferences     # 모든 신청의 상태가 "할당됨"으�
 
 ## CI/CD 설정
 
-각 구현체들은 각자의 source repository 에 구성되었고, 사용한 CI/CD 플랫폼은 GCP를 사용하였으며, pipeline build script 는 각 프로젝트 폴더 이하에 cloudbuild.yml 에 포함되었다.
+각 구현체들은 각자의 source repository 에 구성되었고, 도커라이징, deploy 및
+서비스 생성을 진행하였다.
 
 - git에서 소스 가져오기
 ```
