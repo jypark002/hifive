@@ -22,7 +22,7 @@
     - [동기식 호출 / 서킷 브레이킹 / 장애격리](#동기식-호출-서킷-브레이킹-장애격리)
     - [오토스케일 아웃](#오토스케일-아웃)
     - [무정지 재배포](#무정지-재배포)
-  - [신규 개발 조직의 추가](#신규-개발-조직의-추가)
+
 
 # 서비스 시나리오
 
@@ -192,82 +192,77 @@ import java.util.Map;
 @Table(name="Conference_table")
 public class Conference{
 
-    @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
-    private Long conferenceId;
-    private String status;
-    private Long payId;
-    private Long roomNumber;
+  @Id
+  @GeneratedValue(strategy=GenerationType.AUTO)
+  private Long conferenceId;
+  private String status;
+  private Long payId;
+  private Long roomNumber;
 
-    @PostPersist //해당 엔티티를 저장한 후
-    public void onPostPersist(){
-        //회의가 저장되면, pay에 request를 보낸다.
-        // 회의 상태 : CREATED | PAID | ASSIGNED | CANCELED
-        setStatus("CREATED");
-        Applied applied = new Applied();
-        //BeanUtils.copyProperties는 원본객체의 필드 값을 타겟 객체의 필드값으로 복사하는 유틸인데, 필드이름과 타입이 동일해야함.
-        applied.setConferenceId(this.getConferenceId());
-        applied.setConferenceStatus(this.getStatus());
-        applied.setRoomNumber(this.getRoomNumber());
-        applied.publishAfterCommit();
-        //신청내역이 카프카에 올라감
-        try {
-            Map<String, String> res = ConferenceApplication.applicationContext
-                    .getBean(hifive.external.PayService.class)
-                    .paid(applied);
-            //결제 아이디가 있고, 결제 상태로 돌아온 경우 회의 상태로 결제로 바꾼다.
-            if (res.get("status").equals("Req_complete")) {
-                this.setStatus("Req complete");
-            }
-            this.setPayId(Long.valueOf(res.get("payid")));
-            ConferenceApplication.applicationContext.getBean(javax.persistence.EntityManager.class).flush();
-            return;
-        }
-        catch (Exception e)
-        {
-            System.out.println(e);
-        }
+  @PrePersist //해당 엔티티를 저장한 후
+  public void onPrePersist(){
+      
+    setStatus("CREATED");
+    Applied applied = new Applied();
+    //BeanUtils.copyProperties는 원본객체의 필드 값을 타겟 객체의 필드값으로 복사하는 유틸인데, 필드이름과 타입이 동일해야함.
+    applied.setConferenceId(this.getConferenceId());
+    applied.setConferenceStatus(this.getStatus());
+    applied.setRoomNumber(this.getRoomNumber());
+    applied.publishAfterCommit();
+    //신청내역이 카프카에 올라감
+    
+    Map<String, String> res = ConferenceApplication.applicationContext
+            .getBean(hifive.external.PayService.class)
+            .paid(applied);
+    //결제 아이디가 있고, 결제 상태로 돌아온 경우 회의 상태로 결제로 바꾼다.
+    if (res.get("status").equals("Req_complete")) {
+      this.setStatus("Req complete");
     }
+    this.setPayId(Long.valueOf(res.get("payid")));
 
-    @PreRemove //해당 엔티티를 삭제하기 전 (회의를 삭제하면 취소신청 이벤트 생성)
-    public void onPreRemove(){
-        System.out.println("#################################### PreRemove : ConferenceId=" + this.getConferenceId());
-        ApplyCanceled applyCanceled = new ApplyCanceled();
-        applyCanceled.setConferenceId(this.getConferenceId());
-        applyCanceled.setConferenceStatus("CANCELED");
-        applyCanceled.setPayId(this.getPayId());
-        applyCanceled.publishAfterCommit();
-        //삭제하고 ApplyCanceled 이벤트 카프카에 전송
-    }
+    return;
+  }
 
-    public Long getConferenceId() {
-        return conferenceId;
-    }
-    public void setConferenceId(Long conferenceId) {
-        this.conferenceId = conferenceId;
-    }
-    
-    public String getStatus() {
-        return status;
-    }
-    public void setStatus(String status) {
-        this.status = status;
-    }
-    
-    public Long getPayId() {
-        return payId;
-    }
-    public void setPayId(Long payId) {
-        this.payId = payId;
-    }
-    
-    public Long getRoomNumber() {
-        return roomNumber;
-    }
-    public void setRoomNumber(Long roomNumber) {
-        this.roomNumber = roomNumber;
-    }
+  @PreRemove //해당 엔티티를 삭제하기 전 (회의를 삭제하면 취소신청 이벤트 생성)
+  public void onPreRemove(){
+    System.out.println("#################################### PreRemove : ConferenceId=" + this.getConferenceId());
+    ApplyCanceled applyCanceled = new ApplyCanceled();
+    applyCanceled.setConferenceId(this.getConferenceId());
+    applyCanceled.setConferenceStatus("CANCELED");
+    applyCanceled.setPayId(this.getPayId());
+    applyCanceled.publishAfterCommit();
+    //삭제하고 ApplyCanceled 이벤트 카프카에 전송
+  }
+
+  public Long getConferenceId() {
+    return conferenceId;
+  }
+  public void setConferenceId(Long conferenceId) {
+    this.conferenceId = conferenceId;
+  }
+
+  public String getStatus() {
+    return status;
+  }
+  public void setStatus(String status) {
+    this.status = status;
+  }
+
+  public Long getPayId() {
+    return payId;
+  }
+  public void setPayId(Long payId) {
+    this.payId = payId;
+  }
+
+  public Long getRoomNumber() {
+    return roomNumber;
+  }
+  public void setRoomNumber(Long roomNumber) {
+    this.roomNumber = roomNumber;
+  }
 }
+
 ```
 
 - Entity Pattern 과 Repository Pattern 을 적용하여 JPA 기반의 다양한 데이터소스 유형 (RDB or NoSQL) 에 대한 별도의 처리 없이 데이터 접근 어댑터를 자동 생성하기 위하여 Spring Data REST 의 RestRepository 를 적용하였다.
@@ -825,72 +820,3 @@ Concurrency:		       96.02
 - Liveness 적용된 Pay 서비스 , 응답불가로 인한 restart 동작 확인
 
   ![스크린샷 2021-06-08 오후 1 59 15](https://user-images.githubusercontent.com/40500484/121125928-50083f00-c862-11eb-91dd-c47a74eade37.png)
-
-
-
-
-# 신규 개발 조직의 추가
-
-  ![image](https://user-images.githubusercontent.com/487999/79684133-1d6c4300-826a-11ea-94a2-602e61814ebf.png)
-
-
-## 마케팅팀의 추가
-    - KPI: 신규 고객의 유입률 증대와 기존 고객의 충성도 향상
-    - 구현계획 마이크로 서비스: 기존 customer 마이크로 서비스를 인수하며, 고객에 음식 및 맛집 추천 서비스 등을 제공할 예정
-
-## 이벤트 스토밍 
-    ![image](https://user-images.githubusercontent.com/487999/79685356-2b729180-8273-11ea-9361-a434065f2249.png)
-
-
-## 헥사고날 아키텍처 변화 
-
-![image](https://user-images.githubusercontent.com/487999/79685243-1d704100-8272-11ea-8ef6-f4869c509996.png)
-
-## 구현  
-
-기존의 마이크로 서비스에 수정을 발생시키지 않도록 Inbund 요청을 REST 가 아닌 Event 를 Subscribe 하는 방식으로 구현. 기존 마이크로 서비스에 대하여 아키텍처나 기존 마이크로 서비스들의 데이터베이스 구조와 관계없이 추가됨. 
-
-## 운영과 Retirement
-
-Request/Response 방식으로 구현하지 않았기 때문에 서비스가 더이상 불필요해져도 Deployment 에서 제거되면 기존 마이크로 서비스에 어떤 영향도 주지 않음.
-
-* [비교] 결제 (pay) 마이크로서비스의 경우 API 변화나 Retire 시에 app(주문) 마이크로 서비스의 변경을 초래함:
-
-예) API 변화시
-```
-# Order.java (Entity)
-
-    @PostPersist
-    public void onPostPersist(){
-
-        fooddelivery.external.결제이력 pay = new fooddelivery.external.결제이력();
-        pay.setOrderId(getOrderId());
-        
-        Application.applicationContext.getBean(fooddelivery.external.결제이력Service.class)
-                .결제(pay);
-
-                --> 
-
-        Application.applicationContext.getBean(fooddelivery.external.결제이력Service.class)
-                .결제2(pay);
-
-    }
-```
-
-예) Retire 시
-```
-# Order.java (Entity)
-
-    @PostPersist
-    public void onPostPersist(){
-
-        /**
-        fooddelivery.external.결제이력 pay = new fooddelivery.external.결제이력();
-        pay.setOrderId(getOrderId());
-        
-        Application.applicationContext.getBean(fooddelivery.external.결제이력Service.class)
-                .결제(pay);
-
-        **/
-    }
-```
