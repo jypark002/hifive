@@ -819,6 +819,16 @@ Concurrency:		       96.02
   ![스크린샷 2021-06-07 오후 9 45 31](https://user-images.githubusercontent.com/40500484/121018788-c9a81a80-c7d9-11eb-9013-1a68ccf1a9b1.png)
 
 
+- Liveness test를 위해 port : 8090으로 변경
+- Delay time 등 옵션도 작게 변경
+  
+  ![스크린샷 2021-06-08 오후 1 59 29](https://user-images.githubusercontent.com/40500484/121125804-1cc5b000-c862-11eb-8d5d-34b5a0ba1df2.png)
+
+- Liveness 적용된 Pay 서비스 , 응답불가로 인한 restart 동작 확인
+
+![스크린샷 2021-06-08 오후 1 59 15](https://user-images.githubusercontent.com/40500484/121125928-50083f00-c862-11eb-91dd-c47a74eade37.png)
+
+
 
 
 # 신규 개발 조직의 추가
