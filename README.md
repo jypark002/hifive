@@ -97,7 +97,7 @@
 ![image](https://user-images.githubusercontent.com/81279673/120964904-07d41880-c79f-11eb-9049-88d11fa059a3.png)
 
     - 도메인 서열 분리 
-        - Core Domain:  conference, room : 없어서는 안될 핵심 서비스이며, 연견 Up-time SLA 수준을 99.999% 목표, 배포주기는 app 의 경우 1주일 1회 미만, store 의 경우 1개월 1회 미만
+        - Core Domain:  conference, room : 없어서는 안될 핵심 서비스이며, 연견 Up-time SLA 수준을 99.999% 목표, 배포주기는 conference 의 경우 1주일 1회 미만, room 의 경우 1개월 1회 미만
         - Supporting Domain:   customer center : 경쟁력을 내기위한 서비스이며, SLA 수준은 연간 60% 이상 uptime 목표, 배포주기는 각 팀의 자율이나 표준 스프린트 주기가 1주일 이므로 1주일 1회 이상을 기준으로 함.
         - General Domain:   pay : 결제서비스로 3rd Party 외부 서비스를 사용하는 것이 경쟁력이 높음 (핑크색으로 이후 전환할 예정)
 
@@ -478,86 +478,113 @@ http post http://localhost:8081/conferences status="" payId=0 roomNumber=2   #Su
 ## 비동기식 호출 / 시간적 디커플링 / 장애격리 / 최종 (Eventual) 일관성 테스트
 
 
-결제가 이루어진 후에 상점시스템으로 이를 알려주는 행위는 동기식이 아니라 비 동기식으로 처리하여 상점 시스템의 처리를 위하여 결제주문이 블로킹 되지 않아도록 처리한다.
+결제가 이루어진 후에 회의실 관리(Room)로 이를 알려주는 행위는 동기식이 아니라 비동기식으로 처리하여 회의실 관리 서비스의 처리를 위하여 결제가 블로킹 되지 않아도록 처리한다.
  
 - 이를 위하여 결제이력에 기록을 남긴 후에 곧바로 결제승인이 되었다는 도메인 이벤트를 카프카로 송출한다(Publish)
  
 ```
-package fooddelivery;
+package hifive;
 
 @Entity
 @Table(name="결제이력_table")
 public class 결제이력 {
 
- ...
-    @PrePersist
-    public void onPrePersist(){
-        결제승인됨 결제승인됨 = new 결제승인됨();
-        BeanUtils.copyProperties(this, 결제승인됨);
-        결제승인됨.publish();
+@Entity
+@Table(name="Pay_table")
+public class Pay {
+
+    @Id
+    @GeneratedValue(strategy=GenerationType.AUTO)
+    private Long payId;
+    private String status;
+    private Long conferenceId;
+    private Long roomNumber;
+
+    @PostPersist
+    public void onPostPersist(){
+
+        if (this.getStatus() != "PAID") return;
+
+        System.out.println("********************* Pay PostPersist Start. PayStatus=" + this.getStatus());
+
+        Paid paid = new Paid();
+        paid.setPayId(this.payId);
+        paid.setPayStatus(this.status);
+        paid.setConferenceId(this.conferenceId);
+        paid.setRoomNumber(this.roomNumber);
+        //BeanUtils.copyProperties(this, paid);
+        paid.publishAfterCommit();
+
+        try {
+            Thread.currentThread().sleep((long) (400 + Math.random() * 220));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println(toString());
+        System.out.println("********************* Pay PostPersist End.");
     }
+
 
 }
 ```
 - 상점 서비스에서는 결제승인 이벤트에 대해서 이를 수신하여 자신의 정책을 처리하도록 PolicyHandler 를 구현한다:
 
 ```
-package fooddelivery;
+package hifive;
 
-...
 
 @Service
 public class PolicyHandler{
+    @Autowired RoomRepository roomRepository;
 
     @StreamListener(KafkaProcessor.INPUT)
-    public void whenever결제승인됨_주문정보받음(@Payload 결제승인됨 결제승인됨){
+    public void wheneverPaid_RoomAssign(@Payload Paid paid){
 
-        if(결제승인됨.isMe()){
-            System.out.println("##### listener 주문정보받음 : " + 결제승인됨.toJson());
-            // 주문 정보를 받았으니, 요리를 슬슬 시작해야지..
-            
+        if(!paid.validate()) {
+            System.out.println("##### listener RoomAssign Fail");
+            return;
         }
+
+        else{
+            System.out.println("\n\n##### listener RoomAssign : " + paid.toJson() + "\n\n");
+
+            //예약 신청한 방 번호 조회, 퇴실 개념이 없기 때문에 상태 검사 하지 않음
+            Optional<Room> optionalRoom = roomRepository.findById(paid.getRoomNumber());
+
+            Room room = optionalRoom.get();
+            room.setRoomStatus("FULL");
+            room.setUsedCount(room.getUsedCount() + 1);
+            room.setConferenceId(paid.getConferenceId());
+            room.setPayId(paid.getPayId());
+
+            System.out.println("##### 방배정 확인");
+            System.out.println("[ RoomStatus : "+ room.getRoomStatus()+", RoomNumber : " + room.getRoomNumber() + ", UsedCount : "+ room.getUsedCount()+ ", ConferenceId : "+ room.getConferenceId()+ ","+room.getPayId()+"]");
+            roomRepository.save(room);
+        }
+            
     }
 
-}
-
-```
-실제 구현을 하자면, 카톡 등으로 점주는 노티를 받고, 요리를 마친후, 주문 상태를 UI에 입력할테니, 우선 주문정보를 DB에 받아놓은 후, 이후 처리는 해당 Aggregate 내에서 하면 되겠다.:
-  
-```
-  @Autowired 주문관리Repository 주문관리Repository;
-  
-  @StreamListener(KafkaProcessor.INPUT)
-  public void whenever결제승인됨_주문정보받음(@Payload 결제승인됨 결제승인됨){
-
-      if(결제승인됨.isMe()){
-          카톡전송(" 주문이 왔어요! : " + 결제승인됨.toString(), 주문.getStoreId());
-
-          주문관리 주문 = new 주문관리();
-          주문.setId(결제승인됨.getOrderId());
-          주문관리Repository.save(주문);
-      }
-  }
-
 ```
 
-상점 시스템은 주문/결제와 완전히 분리되어있으며, 이벤트 수신에 따라 처리되기 때문에, 상점시스템이 유지보수로 인해 잠시 내려간 상태라도 주문을 받는데 문제가 없다:
+
+회의실 관리 시스템은 주문/결제와 완전히 분리되어있으며, 이벤트 수신에 따라 처리되기 때문에, 회의실 관리 시스템이 유지보수로 인해 잠시 내려간 상태라도 신청을 받는데 문제가 없다:
 ```
-# 상점 서비스 (store) 를 잠시 내려놓음 (ctrl+c)
+# 회의실 관리 시스템 (Room) 를 잠시 내려놓음 (ctrl+c)
 
-#주문처리
-http localhost:8081/orders item=통닭 storeId=1   #Success
-http localhost:8081/orders item=피자 storeId=2   #Success
+#신청 처리
+http post http://localhost:8081/conferences status="" payId=0 roomNumber=1   #Success
+http post http://localhost:8081/conferences status="" payId=0 roomNumber=2   #Success
 
-#주문상태 확인
-http localhost:8080/orders     # 주문상태 안바뀜 확인
+#신청 상태 확인
+http localhost:8080/conferences     # 신청 상태 안바뀜 확인
 
-#상점 서비스 기동
-cd 상점
+#회의실 관리 서비스 기동
+cd room
 mvn spring-boot:run
 
-#주문상태 확인
-http localhost:8080/orders     # 모든 주문의 상태가 "배송됨"으로 확인
+#신청 상태 확인
+http localhost:8080/conferences     # 모든 신청의 상태가 "할당됨"으로 확인
 ```
 
 
@@ -565,7 +592,8 @@ http localhost:8080/orders     # 모든 주문의 상태가 "배송됨"으로 �
 
 ## CI/CD 설정
 
-각 구현체들은 각자의 source repository 에 구성되었고, 사용한 CI/CD 플랫폼은 GCP를 사용하였으며, pipeline build script 는 각 프로젝트 폴더 이하에 cloudbuild.yml 에 포함되었다.
+각 구현체들은 각자의 source repository 에 구성되었고, 도커라이징, deploy 및
+서비스 생성을 진행하였다.
 
 - git에서 소스 가져오기
 ```
@@ -756,6 +784,20 @@ Concurrency:		       96.02
 - 관련된 프로그램(application.yaml, PayService.java) 적용
 ![image](https://user-images.githubusercontent.com/81279673/121073814-fe35c980-c80d-11eb-980b-5dcc1c6d7019.png)
 ![image](https://user-images.githubusercontent.com/81279673/121073824-ffff8d00-c80d-11eb-8bda-cc188492d138.png)
+
+## Zero-downtime deploy (Readiness Probe)
+- Room 서비스에 kubectl apply -f deployment_non_readiness.yml 을 통해 readiness Probe 옵션을 제거하고 컨테이너 상태 실시간 확인
+![non_de](https://user-images.githubusercontent.com/47212652/121105020-32c17980-c83e-11eb-8e10-c27ee89a369d.PNG)
+
+- Room 서비스에 kubectl apply -f deployment.yml 을 통해 readiness Probe 옵션 적용
+- readinessProbe 옵션 추가  
+    > initialDelaySeconds: 10  
+    > timeoutSeconds: 2  
+    > periodSeconds: 5  
+    > failureThreshold: 10  
+
+- 컨테이너 상태 실시간 확인
+![dep](https://user-images.githubusercontent.com/47212652/121105025-33f2a680-c83e-11eb-9db0-ee2206a966fe.PNG)
 
 ## Self-healing (Liveness Probe)
 - Pay 서비스에 kubectl apply -f deployment.yml 을 통해 liveness Probe 옵션 적용
