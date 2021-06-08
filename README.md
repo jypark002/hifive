@@ -482,12 +482,13 @@ http post http://localhost:8081/conferences status="" payId=0 roomNumber=2   #Su
  
 - 이를 위하여 결제이력에 기록을 남긴 후에 곧바로 결제승인이 되었다는 도메인 이벤트를 카프카로 송출한다(Publish)
  
-```
+```java
 package hifive;
 
-@Entity
-@Table(name="결제이력_table")
-public class 결제이력 {
+import javax.persistence.*;
+import org.springframework.beans.BeanUtils;
+import java.util.List;
+import java.util.Date;
 
 @Entity
 @Table(name="Pay_table")
@@ -525,28 +526,25 @@ public class Pay {
         System.out.println("********************* Pay PostPersist End.");
     }
 
-
 }
 ```
 - 상점 서비스에서는 결제승인 이벤트에 대해서 이를 수신하여 자신의 정책을 처리하도록 PolicyHandler 를 구현한다:
 
-```
+```java
 package hifive;
 
-
 @Service
-public class PolicyHandler{
-    @Autowired RoomRepository roomRepository;
+public class PolicyHandler {
+    @Autowired
+    RoomRepository roomRepository;
 
     @StreamListener(KafkaProcessor.INPUT)
-    public void wheneverPaid_RoomAssign(@Payload Paid paid){
+    public void wheneverPaid_RoomAssign(@Payload Paid paid) {
 
-        if(!paid.validate()) {
+        if (!paid.validate()) {
             System.out.println("##### listener RoomAssign Fail");
             return;
-        }
-
-        else{
+        } else {
             System.out.println("\n\n##### listener RoomAssign : " + paid.toJson() + "\n\n");
 
             //예약 신청한 방 번호 조회, 퇴실 개념이 없기 때문에 상태 검사 하지 않음
@@ -559,11 +557,11 @@ public class PolicyHandler{
             room.setPayId(paid.getPayId());
 
             System.out.println("##### 방배정 확인");
-            System.out.println("[ RoomStatus : "+ room.getRoomStatus()+", RoomNumber : " + room.getRoomNumber() + ", UsedCount : "+ room.getUsedCount()+ ", ConferenceId : "+ room.getConferenceId()+ ","+room.getPayId()+"]");
+            System.out.println("[ RoomStatus : " + room.getRoomStatus() + ", RoomNumber : " + room.getRoomNumber() + ", UsedCount : " + room.getUsedCount() + ", ConferenceId : " + room.getConferenceId() + "," + room.getPayId() + "]");
             roomRepository.save(room);
         }
-            
     }
+}
 
 ```
 
