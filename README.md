@@ -565,37 +565,63 @@ http localhost:8080/orders     # 모든 주문의 상태가 "배송됨"으로 �
 
 ## CI/CD 설정
 
-
 각 구현체들은 각자의 source repository 에 구성되었고, 사용한 CI/CD 플랫폼은 GCP를 사용하였으며, pipeline build script 는 각 프로젝트 폴더 이하에 cloudbuild.yml 에 포함되었다.
 
+- git에서 소스 가져오기
+```
+git clone https://github.com/jypark002/hifive.git
+```
+- Build 하기
+```
+cd hifive
+cd conference
+mvn package
+```
+- 도커라이징 : Azure 레지스트리에 도커 이미지 푸시하기
+```
+az acr build --registry skccuser05 --image skccuser05.azurecr.io/conference:latest .
+```
+- 컨테이너라이징 : 디플로이 생성 확인
+```
+kubectl create deploy conference --image=skccuser05.azurecr.io/conference:latest
+```
+- 컨테이너라이징 : 서비스 생성
+```
+kubectl expose deploy conference --port=8080
+```
+> customerCenter, pay, room, gateway 서비스도 동일한 배포 작업 반복
 
 ## 동기식 호출 / 서킷 브레이킹 / 장애격리
 
-* 서킷 브레이킹 프레임워크의 선택: Spring FeignClient + Hystrix 옵션을 사용하여 구현함
+- Spring FeignClient + Hystrix을 사용하여 서킷 브레이킹 구현
+- Hystrix 설정 : 결제 요청 쓰레드의 처리 시간이 410ms가 넘어서기 시작한 후 어느정도 지속되면 서킷 브레이커가 닫히도록 설정
+- 결제를 요청하는 Conference 서비스에서 Hystrix 설정
 
-시나리오는 단말앱(app)-->결제(pay) 시의 연결을 RESTful Request/Response 로 연동하여 구현이 되어있고, 결제 요청이 과도할 경우 CB 를 통하여 장애격리.
-
-- Hystrix 를 설정:  요청처리 쓰레드에서 처리시간이 610 밀리가 넘어서기 시작하여 어느정도 유지되면 CB 회로가 닫히도록 (요청을 빠르게 실패처리, 차단) 설정
-```
-# application.yml
-
+> Conference 서비스의 application.yml 파일
+```yaml
+feign:
+  hystrix:
+    enabled: true
 hystrix:
   command:
-    # 전역설정
     default:
-      execution.isolation.thread.timeoutInMilliseconds: 610
-
+      execution.isolation.thread.timeoutInMilliseconds: 410
 ```
 
-- 피호출 서비스(결제:pay) 의 임의 부하 처리 - 400 밀리에서 증감 220 밀리 정도 왔다갔다 하게
-```
-# (pay) 결제이력.java (Entity)
+- 결제 서비스(pay)에서 임의 부하 처리 - 400 밀리에서 증감 220 밀리 정도 왔다갔다 하게
+> Pay 서비스의 Pay.java 파일
+```java
+    @PostPersist
+    public void onPostPersist(){
+        if (this.getStatus() != "PAID") return;
 
-    @PrePersist
-    public void onPrePersist(){  //결제이력을 저장한 후 적당한 시간 끌기
+        Paid paid = new Paid();
+        paid.setPayId(this.payId);
+        paid.setPayStatus(this.status);
+        paid.setConferenceId(this.conferenceId);
+        paid.setRoomNumber(this.roomNumber);
+        paid.publishAfterCommit();
 
-        ...
-        
         try {
             Thread.currentThread().sleep((long) (400 + Math.random() * 220));
         } catch (InterruptedException e) {
@@ -604,12 +630,12 @@ hystrix:
     }
 ```
 
-* 부하테스터 siege 툴을 통한 서킷 브레이커 동작 확인:
-- 동시사용자 100명
-- 60초 동안 실시
+- 부하테스터 siege 툴을 통한 서킷 브레이커 동작 확인:
+    - 동시사용자 100명
+    - 60초 동안 실시
 
 ```
-$ siege -c100 -t60S -r10 --content-type "application/json" 'http://localhost:8081/orders POST {"item": "chicken"}'
+siege -c100 -t60S -r10 -v --content-type "application/json" 'http://20.194.99.230:8080/conferences POST {"status":"", "payId":0, "roomNumber":1}'
 
 ** SIEGE 4.0.5
 ** Preparing 100 concurrent users for battle.
@@ -739,10 +765,8 @@ Longest transaction:	        9.20
 Shortest transaction:	        0.00
 
 ```
-- 운영시스템은 죽지 않고 지속적으로 CB 에 의하여 적절히 회로가 열림과 닫힘이 벌어지면서 자원을 보호하고 있음을 보여줌. 하지만, 63.55% 가 성공하였고, 46%가 실패했다는 것은 고객 사용성에 있어 좋지 않기 때문에 Retry 설정과 동적 Scale out (replica의 자동적 추가,HPA) 을 통하여 시스템을 확장 해주는 후속처리가 필요.
+- 운영 중인 시스템은 죽지 않고 지속적으로 서킷브레이커에 의하여 적절히 회로가 열림과 닫힘이 벌어지면서 자원을 보호하고 있음을 보여줌. 하지만, 63.55% 가 성공하였고, 46%가 실패했다는 것은 고객 사용성에 있어 좋지 않기 때문에 Retry 설정과 동적 Scale out (replica의 자동적 추가,HPA) 을 통하여 시스템을 확장 해주는 후속처리가 필요.
 
-- Retry 의 설정 (istio)
-- Availability 가 높아진 것을 확인 (siege)
 
 ## 오토스케일 아웃
 앞서 CB 는 시스템을 안정되게 운영할 수 있게 해줬지만 사용자의 요청을 100% 받아들여주지 못했기 때문에 이에 대한 보완책으로 자동화된 확장 기능을 적용하고자 한다. 
