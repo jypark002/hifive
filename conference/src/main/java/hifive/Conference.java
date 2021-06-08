@@ -19,8 +19,8 @@ public class Conference{
     // @Autowired ConferenceRepository conferenceRepository;
 
 
-    @PostPersist //해당 엔티티를 저장한 후
-    public void onPostPersist(){
+    @PrePersist //해당 엔티티를 저장한 후
+    public void onPrePersist(){
         //회의가 저장되면, pay에 request를 보낸다.
          // 회의 상태 : CREATED | PAID | ASSIGNED | CANCELED
         setStatus("CREATED");
@@ -43,7 +43,7 @@ public class Conference{
             // Conference conference = confOptional.get();
             this.setPayId(Long.valueOf(res.get("payid")));
             // conferenceRepository.save(conference);
-            ConferenceApplication.applicationContext.getBean(javax.persistence.EntityManager.class).flush();
+
             return;
 //        }
 //        catch (Exception e)
