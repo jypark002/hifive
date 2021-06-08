@@ -826,7 +826,7 @@ Concurrency:		       96.02
 
 - Liveness 적용된 Pay 서비스 , 응답불가로 인한 restart 동작 확인
 
-![스크린샷 2021-06-08 오후 1 59 15](https://user-images.githubusercontent.com/40500484/121125928-50083f00-c862-11eb-91dd-c47a74eade37.png)
+  ![스크린샷 2021-06-08 오후 1 59 15](https://user-images.githubusercontent.com/40500484/121125928-50083f00-c862-11eb-91dd-c47a74eade37.png)
 
 
 
