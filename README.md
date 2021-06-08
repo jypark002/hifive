@@ -853,6 +853,20 @@ Concurrency:		       96.02
 ![image](https://user-images.githubusercontent.com/81279673/121073814-fe35c980-c80d-11eb-980b-5dcc1c6d7019.png)
 ![image](https://user-images.githubusercontent.com/81279673/121073824-ffff8d00-c80d-11eb-8bda-cc188492d138.png)
 
+## Zero-downtime deploy (Readiness Probe)
+- Room 서비스에 kubectl apply -f deployment_non_readiness.yml 을 통해 readiness Probe 옵션을 제거하고 컨테이너 상태 실시간 확인
+![non_de](https://user-images.githubusercontent.com/47212652/121105020-32c17980-c83e-11eb-8e10-c27ee89a369d.PNG)
+
+- Room 서비스에 kubectl apply -f deployment.yml 을 통해 readiness Probe 옵션 적용
+- readinessProbe 옵션 추가  
+    > initialDelaySeconds: 10  
+    > timeoutSeconds: 2  
+    > periodSeconds: 5  
+    > failureThreshold: 10  
+
+- 컨테이너 상태 실시간 확인
+![dep](https://user-images.githubusercontent.com/47212652/121105025-33f2a680-c83e-11eb-9db0-ee2206a966fe.PNG)
+
 ## Self-healing (Liveness Probe)
 - Pay 서비스에 kubectl apply -f deployment.yml 을 통해 liveness Probe 옵션 적용
 
