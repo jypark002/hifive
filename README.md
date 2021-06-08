@@ -864,7 +864,7 @@ Concurrency:		       96.02
 
 
 ## ConfigMap
-- 로컬환경 설정을 Cloud 환경정보로 변경 시 ConfigMap으로 설정함
+- 환경정보로 변경 시 ConfigMap으로 설정함
 
 - 리터럴 값으로부터 ConfigMap 생성
 ![image](https://user-images.githubusercontent.com/81279673/121073309-4ef8f280-c80d-11eb-998e-d13b361d53e4.png)
