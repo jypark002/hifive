@@ -706,18 +706,27 @@ kubectl get deploy conference -w
   
 
 ## ConfigMap
-- 환경정보로 변경 시 ConfigMap으로 설정함
 
 - 리터럴 값으로부터 ConfigMap 생성
-![image](https://user-images.githubusercontent.com/81279673/121073309-4ef8f280-c80d-11eb-998e-d13b361d53e4.png)
+```
+kubectl create configmap apiurl --from-literal=configurl=http://room:8080
+```
 
 - 설정된 ConfigMap 정보 가져오기
-![image](https://user-images.githubusercontent.com/81279673/121074021-42c16500-c80e-11eb-8db8-2497dcc099e1.png)
-![image](https://user-images.githubusercontent.com/81279673/121073595-a9924e80-c80d-11eb-80e5-88b40effb31b.png)
+```
+kubectl get configmap apiurl -o yaml
+```
+<img width="523" alt="스크린샷 2021-06-25 오전 12 12 24" src="https://user-images.githubusercontent.com/40500484/123288070-321d2880-d54a-11eb-8222-3a6329241818.png">
 
-- 관련된 프로그램(application.yaml, PayService.java) 적용
-![image](https://user-images.githubusercontent.com/81279673/121073814-fe35c980-c80d-11eb-980b-5dcc1c6d7019.png)
-![image](https://user-images.githubusercontent.com/81279673/121073824-ffff8d00-c80d-11eb-8bda-cc188492d138.png)
+- 관련된 프로그램(application.yaml, roomService.java) 적용
+
+![스크린샷 2021-06-25 오전 12 08 01](https://user-images.githubusercontent.com/40500484/123288126-3ea18100-d54a-11eb-9b18-56cf24b4d118.png)
+
+![스크린샷 2021-06-25 오전 12 08 17](https://user-images.githubusercontent.com/40500484/123288157-43663500-d54a-11eb-9cf8-be51e5568b9e.png)
+
+-정상동작 확인
+
+![스크린샷 2021-06-25 오전 12 08 58](https://user-images.githubusercontent.com/40500484/123288196-4cef9d00-d54a-11eb-994c-07727c2d3dd3.png)
 
 ## Zero-downtime deploy (Readiness Probe)
 - Room 서비스에 kubectl apply -f deployment_non_readiness.yml 을 통해 readiness Probe 옵션을 제거하고 컨테이너 상태 실시간 확인
