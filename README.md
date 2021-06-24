@@ -365,19 +365,27 @@ spring:
         - id: conference
           uri: http://conference:8080
           predicates:
-            - Path=/conferences/** 
+            - Path=/conferences/**
         - id: pay
           uri: http://pay:8080
           predicates:
-            - Path=/pays/** 
+            - Path=/pays/**
         - id: room
           uri: http://room:8080
           predicates:
-            - Path=/rooms/** 
+            - Path=/rooms/**
         - id: customerCenter
           uri: http://customerCenter:8080
           predicates:
             - Path= /roomStates/**
+        - id: clean
+          uri: http://clean:8080
+          predicates:
+            - - Path=/MakeRoom/**
+        - id: clean2
+          uri: http://clean:8080
+          predicates:
+            - - Path=/complete/**
       globalcors:
         corsConfigurations:
           '[/**]':
